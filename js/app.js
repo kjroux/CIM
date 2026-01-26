@@ -520,7 +520,7 @@ const App = {
 
         // Get the exercise definition from WORKOUT_DETAILS
         const workout = App.getScheduledWorkout(App.currentDate);
-        const info = App.getWorkoutInfo(App.currentDate);
+        const info = App.getProgramInfo(App.currentDate);
         const phaseKey = `phase${info.phase}`;
         const workoutDetails = WORKOUT_DETAILS[workout.type]?.[phaseKey];
         const exercise = workoutDetails?.exercises.find(ex => ex.id === exerciseId);
