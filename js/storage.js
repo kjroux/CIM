@@ -6,7 +6,7 @@ const STORAGE_KEYS = {
   APP_VERSION: 'cim_app_version'
 };
 
-const CURRENT_VERSION = '1.1'; // Increment this when making breaking changes
+const CURRENT_VERSION = '1.2'; // Increment this when making breaking changes
 const DEFAULT_START_DATE = '2026-02-02'; // Monday of week 1 (Feb 2, 2026)
 
 const Storage = {
@@ -50,6 +50,34 @@ const Storage = {
       } else {
         console.log('User has existing logs, keeping old start date');
       }
+    }
+
+    // v1.2: Migrate to single weight per exercise structure
+    if (data.logs) {
+      Object.keys(data.logs).forEach(date => {
+        const log = data.logs[date];
+        if (log.exercises) {
+          Object.keys(log.exercises).forEach(exerciseId => {
+            const exercise = log.exercises[exerciseId];
+            // If sets array has weight in each set, migrate to single weight
+            if (exercise.sets && exercise.sets.length > 0 && exercise.sets[0].weight !== undefined) {
+              // Take first set's weight as the exercise weight
+              exercise.weight = exercise.sets[0].weight;
+              // Remove weight from individual sets, add completed flag
+              exercise.sets = exercise.sets.map(set => ({
+                reps: set.reps || set.seconds,
+                completed: set.reps > 0 || set.seconds > 0,
+                ...(set.seconds !== undefined && { seconds: set.seconds })
+              }));
+            }
+          });
+        }
+      });
+    }
+
+    // Initialize exercise weights storage if not exists
+    if (!data.exerciseWeights) {
+      data.exerciseWeights = {};
     }
 
     data.version = CURRENT_VERSION;
@@ -140,5 +168,38 @@ const Storage = {
   resetToDefault() {
     this.clearAllData();
     return this.initUserData();
+  },
+
+  // Get last used weight for an exercise
+  getExerciseWeight(exerciseId) {
+    const userData = this.getUserData();
+    if (!userData || !userData.exerciseWeights) return null;
+    return userData.exerciseWeights[exerciseId] || null;
+  },
+
+  // Set weight for an exercise (global last used)
+  setExerciseWeight(exerciseId, weight) {
+    const userData = this.getUserData() || { startDate: DEFAULT_START_DATE, logs: {}, dailyRoutines: {}, exerciseWeights: {} };
+    if (!userData.exerciseWeights) userData.exerciseWeights = {};
+    userData.exerciseWeights[exerciseId] = weight;
+    return this.saveUserData(userData);
+  },
+
+  // Get exercise history across all dates
+  getExerciseHistory(exerciseId) {
+    const userData = this.getUserData();
+    if (!userData || !userData.logs) return [];
+
+    const history = [];
+    Object.keys(userData.logs).sort().forEach(date => {
+      const log = userData.logs[date];
+      if (log.exercises && log.exercises[exerciseId]) {
+        history.push({
+          date,
+          ...log.exercises[exerciseId]
+        });
+      }
+    });
+    return history;
   }
 };

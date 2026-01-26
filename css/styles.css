@@ -661,3 +661,319 @@ body {
 }
 
 /* Dark mode already defined at top of file */
+
+/* EXERCISE DETAIL PAGE */
+
+.exercise-detail-page {
+  padding-bottom: calc(var(--nav-height) + 20px);
+}
+
+.exercise-detail-header {
+  padding: 20px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.back-button {
+  background: none;
+  border: none;
+  color: var(--color-primary);
+  font-size: 16px;
+  font-weight: 600;
+  padding: 8px 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.exercise-detail-title {
+  margin-top: 12px;
+}
+
+.exercise-detail-title h2 {
+  font-size: 24px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.exercise-detail-weight {
+  color: var(--color-text-light);
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.exercise-detail-tabs {
+  display: flex;
+  border-bottom: 2px solid var(--color-border);
+  background: var(--color-bg);
+}
+
+.tab-button {
+  flex: 1;
+  padding: 16px;
+  background: none;
+  border: none;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text-light);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab-button.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+}
+
+.exercise-detail-content {
+  padding: 20px;
+}
+
+/* Weight Tab */
+
+.weight-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  align-items: center;
+}
+
+.sets-reps-display,
+.sets-duration-display {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--color-text-light);
+}
+
+.plate-visualization {
+  width: 100%;
+  max-width: 500px;
+  margin: 20px 0;
+}
+
+.plate-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 20px 0;
+}
+
+.plates-left,
+.plates-right {
+  display: flex;
+  gap: 2px;
+}
+
+.plate {
+  width: 50px;
+  height: 80px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.bar {
+  height: 20px;
+  background: #666;
+  color: #fff;
+  padding: 0 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 12px;
+  border-radius: 2px;
+  min-width: 100px;
+}
+
+.bar-only {
+  padding: 20px 40px;
+  background: #666;
+  color: #fff;
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+.weight-adjuster,
+.time-adjuster {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.weight-display,
+.time-display {
+  font-size: 48px;
+  font-weight: 700;
+  color: var(--color-text);
+  min-width: 200px;
+  text-align: center;
+}
+
+.weight-btn,
+.time-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 2px solid var(--color-primary);
+  background: var(--color-bg);
+  color: var(--color-primary);
+  font-size: 24px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.weight-btn:active,
+.time-btn:active {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+/* Progress Tab */
+
+.progress-tab {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.progress-tab h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+.chart {
+  width: 100%;
+  height: 200px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.chart-labels {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 8px;
+  font-size: 14px;
+  color: var(--color-text-light);
+  font-weight: 600;
+}
+
+.bar-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.bar-row {
+  display: flex;
+  align-items: center;
+  padding: 12px;
+  gap: 12px;
+}
+
+.bar-date {
+  min-width: 80px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.bar-sets {
+  display: flex;
+  gap: 8px;
+  flex: 1;
+}
+
+.bar {
+  background: var(--color-primary);
+  color: #fff;
+  padding: 8px 12px;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 600;
+  min-width: 40px;
+  text-align: center;
+  transition: width 0.3s;
+}
+
+.bar-empty {
+  color: var(--color-text-light);
+  font-size: 14px;
+}
+
+/* History Tab */
+
+.history-tab {
+  overflow-x: auto;
+}
+
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.history-table thead {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.history-table th {
+  padding: 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.history-table td {
+  padding: 12px;
+  border-top: 1px solid var(--color-border);
+  font-size: 14px;
+}
+
+.history-table tbody tr:nth-child(even) {
+  background: #f9f9f9;
+}
+
+@media (prefers-color-scheme: dark) {
+  .history-table tbody tr:nth-child(even) {
+    background: #2a2a2a;
+  }
+
+  .bar-row:nth-child(even) {
+    background: #2a2a2a !important;
+  }
+}
+
+/* Make exercise headers clickable */
+
+.clickable-exercise {
+  cursor: pointer;
+  transition: background 0.2s;
+  padding: 12px;
+  margin: -12px;
+  border-radius: 8px;
+}
+
+.clickable-exercise:hover {
+  background: rgba(66, 133, 244, 0.05);
+}
+
+.clickable-exercise:active {
+  background: rgba(66, 133, 244, 0.1);
+}

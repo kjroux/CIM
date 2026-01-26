@@ -4,6 +4,8 @@ const App = {
   currentView: 'today',
   currentDate: null,
   currentWeek: 1,
+  exerciseDetail: null, // { exerciseId, exerciseName, exercise, tab: 'weight' }
+  previousView: null, // For returning from exercise detail
 
   init() {
     // Initialize storage
@@ -24,7 +26,7 @@ const App = {
 
   registerServiceWorker() {
     if ('serviceWorker' in navigator) {
-      navigator.serviceWorker.register('/service-worker.js')
+      navigator.serviceWorker.register('./service-worker.js')
         .then(reg => console.log('Service Worker registered'))
         .catch(err => console.log('Service Worker registration failed:', err));
     }
@@ -63,6 +65,10 @@ const App = {
       case 'settings':
         contentArea.innerHTML = this.renderSettingsView();
         this.setupSettingsViewListeners();
+        break;
+      case 'exercise-detail':
+        contentArea.innerHTML = this.renderExerciseDetailView();
+        this.setupExerciseDetailListeners();
         break;
     }
   },
@@ -288,18 +294,20 @@ const App = {
     }
 
     const exercises = workoutDetails.exercises.map(ex => {
-      const loggedSets = log?.exercises?.[ex.id]?.sets || [];
+      const exerciseLog = log?.exercises?.[ex.id] || {};
+      const loggedSets = exerciseLog.sets || [];
+      const loggedWeight = exerciseLog.weight || Storage.getExerciseWeight(ex.id) || '';
       const repsDisplay = typeof ex.reps === 'number' ? `${ex.reps} reps` : ex.reps;
 
       return `
-        <div class="exercise-item" data-exercise-id="${ex.id}">
-          <div class="exercise-header">
+        <div class="exercise-item" data-exercise-id="${ex.id}" data-exercise-name="${ex.name}">
+          <div class="exercise-header clickable-exercise">
             <h4>${ex.name}</h4>
             <span class="exercise-target">${ex.sets}x${repsDisplay}</span>
           </div>
           ${ex.notes ? `<p class="exercise-notes">${ex.notes}</p>` : ''}
           <div class="exercise-sets">
-            ${this.renderExerciseSets(ex, loggedSets)}
+            ${this.renderExerciseSets(ex, loggedSets, loggedWeight)}
           </div>
         </div>
       `;
@@ -314,10 +322,10 @@ const App = {
     `;
   },
 
-  renderExerciseSets(exercise, loggedSets) {
+  renderExerciseSets(exercise, loggedSets, weight) {
     let sets = [];
     for (let i = 0; i < exercise.sets; i++) {
-      const logged = loggedSets[i] || { weight: '', reps: '' };
+      const logged = loggedSets[i] || { reps: '' };
 
       if (exercise.bodyweight) {
         // Bodyweight exercises - only show reps
@@ -330,10 +338,11 @@ const App = {
         `);
       } else {
         // Weighted exercises - show weight and reps
+        // Weight is shared across all sets for this exercise
         sets.push(`
           <div class="set-row">
             <span class="set-number">Set ${i + 1}:</span>
-            <input type="number" class="set-input" placeholder="Weight" value="${logged.weight}" data-set="${i}" data-field="weight">
+            <input type="number" class="set-input" placeholder="Weight" value="${weight}" data-set="${i}" data-field="weight">
             <span>lbs x</span>
             <input type="number" class="set-input" placeholder="Reps" value="${logged.reps}" data-set="${i}" data-field="reps">
           </div>
@@ -483,6 +492,26 @@ const App = {
     const stridesCount = document.getElementById('strides-count');
     if (stridesCheck) stridesCheck.addEventListener('change', () => this.saveStridesData());
     if (stridesCount) stridesCount.addEventListener('change', () => this.saveStridesData());
+
+    // Exercise detail - click exercise name to open detail page
+    document.querySelectorAll('.clickable-exercise').forEach(header => {
+      header.addEventListener('click', (e) => {
+        const exerciseItem = e.target.closest('.exercise-item');
+        const exerciseId = exerciseItem.dataset.exerciseId;
+        const exerciseName = exerciseItem.dataset.exerciseName;
+
+        // Get the exercise definition from WORKOUT_DETAILS
+        const workout = this.getScheduledWorkout(this.currentDate);
+        const info = this.getWorkoutInfo(this.currentDate);
+        const phaseKey = `phase${info.phase}`;
+        const workoutDetails = WORKOUT_DETAILS[workout.type]?.[phaseKey];
+        const exercise = workoutDetails?.exercises.find(ex => ex.id === exerciseId);
+
+        if (exercise) {
+          this.openExerciseDetail(exerciseId, exerciseName, exercise);
+        }
+      });
+    });
   },
 
   navigateDay(delta) {
@@ -510,15 +539,34 @@ const App = {
     document.querySelectorAll('.exercise-item').forEach(item => {
       const exerciseId = item.dataset.exerciseId;
       const sets = [];
+      let weight = null;
 
       item.querySelectorAll('.set-row').forEach(row => {
-        const setNum = row.querySelector('[data-field="weight"]').dataset.set;
-        const weight = row.querySelector('[data-field="weight"]').value;
-        const reps = row.querySelector('[data-field="reps"]').value;
-        sets.push({ weight, reps });
+        const weightInput = row.querySelector('[data-field="weight"]');
+        const repsInput = row.querySelector('[data-field="reps"]');
+
+        if (weightInput) {
+          // Weighted exercise - store weight once at exercise level
+          if (!weight) weight = weightInput.value;
+          sets.push({
+            reps: repsInput?.value || '',
+            completed: Boolean(repsInput?.value)
+          });
+        } else {
+          // Bodyweight or time-based - just reps
+          sets.push({
+            reps: repsInput?.value || '',
+            completed: Boolean(repsInput?.value)
+          });
+        }
       });
 
       log.exercises[exerciseId] = { sets };
+      if (weight) {
+        log.exercises[exerciseId].weight = weight;
+        // Also update global exercise weight
+        Storage.setExerciseWeight(exerciseId, weight);
+      }
     });
 
     Storage.saveLog(this.currentDate, log);
@@ -755,6 +803,466 @@ const App = {
         }
       });
     }
+  },
+
+  // EXERCISE DETAIL VIEW
+
+  openExerciseDetail(exerciseId, exerciseName, exercise) {
+    this.previousView = this.currentView;
+    this.exerciseDetail = {
+      exerciseId,
+      exerciseName,
+      exercise,
+      tab: 'weight'
+    };
+    this.renderView('exercise-detail');
+  },
+
+  closeExerciseDetail() {
+    const view = this.previousView || 'today';
+    this.exerciseDetail = null;
+    this.renderView(view);
+  },
+
+  renderExerciseDetailView() {
+    if (!this.exerciseDetail) return '<div>No exercise selected</div>';
+
+    const { exerciseId, exerciseName, exercise } = this.exerciseDetail;
+    const weight = Storage.getExerciseWeight(exerciseId);
+    const isBodyweight = exercise.bodyweight;
+    const isTimeBased = typeof exercise.reps === 'string' && (exercise.reps.includes('sec') || exercise.reps.includes('min'));
+
+    let headerInfo = '';
+    if (!isBodyweight && weight) {
+      headerInfo = `<span class="exercise-detail-weight">${weight} lb</span>`;
+    }
+
+    return `
+      <div class="exercise-detail-page">
+        <div class="exercise-detail-header">
+          <button class="back-button" id="back-to-workout">← Back</button>
+          <div class="exercise-detail-title">
+            <h2>${exerciseName}</h2>
+            ${headerInfo}
+          </div>
+        </div>
+
+        <div class="exercise-detail-tabs">
+          <button class="tab-button active" data-tab="weight">Weight</button>
+          <button class="tab-button" data-tab="progress">Progress</button>
+          <button class="tab-button" data-tab="history">History</button>
+        </div>
+
+        <div class="exercise-detail-content">
+          ${this.renderExerciseDetailTab('weight', exerciseId, exercise)}
+        </div>
+      </div>
+    `;
+  },
+
+  renderExerciseDetailTab(tab, exerciseId, exercise) {
+    switch(tab) {
+      case 'weight':
+        return this.renderWeightTab(exerciseId, exercise);
+      case 'progress':
+        return this.renderProgressTab(exerciseId, exercise);
+      case 'history':
+        return this.renderHistoryTab(exerciseId, exercise);
+      default:
+        return '';
+    }
+  },
+
+  renderWeightTab(exerciseId, exercise) {
+    const isBodyweight = exercise.bodyweight;
+    const isTimeBased = typeof exercise.reps === 'string' && (exercise.reps.includes('sec') || exercise.reps.includes('min'));
+    let weight = Storage.getExerciseWeight(exerciseId);
+
+    // If no weight stored, use a default based on exercise
+    if (!weight) {
+      weight = 135; // Default starting weight
+      Storage.setExerciseWeight(exerciseId, weight);
+    }
+
+    const setsReps = `${exercise.sets}×${exercise.reps}`;
+
+    if (isBodyweight && !isTimeBased) {
+      return `
+        <div class="weight-tab bodyweight">
+          <div class="sets-reps-display">${setsReps}</div>
+          <p>Bodyweight exercise - no weight adjustment needed</p>
+        </div>
+      `;
+    }
+
+    if (isTimeBased) {
+      const targetSeconds = parseInt(exercise.reps) || 60;
+      return `
+        <div class="weight-tab time-based">
+          <div class="sets-duration-display">${exercise.sets}×${exercise.reps}</div>
+          <div class="time-adjuster">
+            <button class="time-btn" data-action="decrease">-5</button>
+            <div class="time-display" id="time-value">${targetSeconds} sec</div>
+            <button class="time-btn" data-action="increase">+5</button>
+          </div>
+        </div>
+      `;
+    }
+
+    // Weighted exercise
+    const plates = this.calculatePlates(weight);
+
+    return `
+      <div class="weight-tab weighted">
+        <div class="sets-reps-display">${setsReps}</div>
+
+        <div class="plate-visualization">
+          ${this.renderPlateBar(plates)}
+        </div>
+
+        <div class="weight-adjuster">
+          <button class="weight-btn" data-action="decrease">-5</button>
+          <div class="weight-display" id="weight-value">${weight} lb</div>
+          <button class="weight-btn" data-action="increase">+5</button>
+        </div>
+      </div>
+    `;
+  },
+
+  calculatePlates(totalWeight) {
+    const barWeight = 45;
+    const weightPerSide = (totalWeight - barWeight) / 2;
+
+    const availablePlates = [
+      { weight: 45, color: '#4285F4', name: '45' },
+      { weight: 35, color: '#FBBC04', name: '35' },
+      { weight: 25, color: '#0F9D58', name: '25' },
+      { weight: 15, color: '#333', name: '15' },
+      { weight: 10, color: '#333', name: '10' },
+      { weight: 5, color: '#4285F4', name: '5' },
+      { weight: 2.5, color: '#0F9D58', name: '2.5' },
+      { weight: 1.25, color: '#fff', name: '1.25', border: true }
+    ];
+
+    const plates = [];
+    let remaining = weightPerSide;
+
+    for (const plate of availablePlates) {
+      while (remaining >= plate.weight) {
+        plates.push(plate);
+        remaining -= plate.weight;
+      }
+    }
+
+    return plates;
+  },
+
+  renderPlateBar(plates) {
+    if (plates.length === 0) {
+      return '<div class="plate-bar"><div class="bar-only">45 lb bar</div></div>';
+    }
+
+    const plateHTML = plates.map(plate => {
+      const style = plate.border
+        ? `background: ${plate.color}; border: 2px solid #333;`
+        : `background: ${plate.color};`;
+      return `<div class="plate" style="${style}">${plate.name}</div>`;
+    }).join('');
+
+    return `
+      <div class="plate-bar">
+        <div class="plates-left">${plateHTML}</div>
+        <div class="bar">45</div>
+        <div class="plates-right">${plateHTML}</div>
+      </div>
+    `;
+  },
+
+  renderProgressTab(exerciseId, exercise) {
+    const history = Storage.getExerciseHistory(exerciseId);
+    const isBodyweight = exercise.bodyweight;
+    const isTimeBased = typeof exercise.reps === 'string' && (exercise.reps.includes('sec') || exercise.reps.includes('min'));
+
+    if (history.length === 0) {
+      return '<div class="progress-tab"><p>No data yet. Complete some workouts to see your progress!</p></div>';
+    }
+
+    if (!isBodyweight && !isTimeBased) {
+      // Weighted exercise - line charts
+      return `
+        <div class="progress-tab">
+          <h3>Weight Over Time</h3>
+          ${this.renderWeightChart(history)}
+
+          <h3>Estimated 1RM Over Time</h3>
+          ${this.renderE1RMChart(history)}
+        </div>
+      `;
+    } else {
+      // Bodyweight/Time-based - horizontal bar chart
+      return `
+        <div class="progress-tab">
+          <h3>${isTimeBased ? 'Duration' : 'Reps'} Over Time</h3>
+          ${this.renderRepsBarChart(history, isTimeBased)}
+        </div>
+      `;
+    }
+  },
+
+  renderWeightChart(history) {
+    const recentHistory = history.slice(-12); // Last 12 sessions
+    if (recentHistory.length === 0) return '<p>No data</p>';
+
+    const maxWeight = Math.max(...recentHistory.map(h => h.weight || 0));
+    const minWeight = Math.min(...recentHistory.map(h => h.weight || maxWeight));
+    const range = maxWeight - minWeight || 10;
+
+    const points = recentHistory.map((entry, i) => {
+      const x = (i / (recentHistory.length - 1)) * 100;
+      const y = 100 - ((entry.weight - minWeight) / range) * 80;
+      return `${x},${y}`;
+    }).join(' ');
+
+    return `
+      <svg class="chart" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polyline points="${points}" fill="none" stroke="#4285F4" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        ${recentHistory.map((entry, i) => {
+          const x = (i / (recentHistory.length - 1)) * 100;
+          const y = 100 - ((entry.weight - minWeight) / range) * 80;
+          return `<circle cx="${x}" cy="${y}" r="3" fill="#4285F4" vector-effect="non-scaling-stroke"/>`;
+        }).join('')}
+      </svg>
+      <div class="chart-labels">
+        <span>${minWeight} lb</span>
+        <span>${maxWeight} lb</span>
+      </div>
+    `;
+  },
+
+  renderE1RMChart(history) {
+    const recentHistory = history.slice(-12);
+    if (recentHistory.length === 0) return '<p>No data</p>';
+
+    const historyWithE1RM = recentHistory.map(entry => {
+      const bestSet = entry.sets?.reduce((best, set) =>
+        (set.reps > (best?.reps || 0)) ? set : best
+      , null);
+      const e1rm = bestSet ? this.calculateE1RM(entry.weight, bestSet.reps) : 0;
+      return { ...entry, e1rm };
+    });
+
+    const maxE1RM = Math.max(...historyWithE1RM.map(h => h.e1rm));
+    const minE1RM = Math.min(...historyWithE1RM.map(h => h.e1rm || maxE1RM));
+    const range = maxE1RM - minE1RM || 10;
+
+    const points = historyWithE1RM.map((entry, i) => {
+      const x = (i / (historyWithE1RM.length - 1)) * 100;
+      const y = 100 - ((entry.e1rm - minE1RM) / range) * 80;
+      return `${x},${y}`;
+    }).join(' ');
+
+    return `
+      <svg class="chart" viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polyline points="${points}" fill="none" stroke="#0F9D58" stroke-width="2" vector-effect="non-scaling-stroke"/>
+        ${historyWithE1RM.map((entry, i) => {
+          const x = (i / (historyWithE1RM.length - 1)) * 100;
+          const y = 100 - ((entry.e1rm - minE1RM) / range) * 80;
+          return `<circle cx="${x}" cy="${y}" r="3" fill="#0F9D58" vector-effect="non-scaling-stroke"/>`;
+        }).join('')}
+      </svg>
+      <div class="chart-labels">
+        <span>${Math.round(minE1RM)} lb</span>
+        <span>${Math.round(maxE1RM)} lb</span>
+      </div>
+    `;
+  },
+
+  calculateE1RM(weight, reps) {
+    // Brzycki formula: e1RM = weight × (36 / (37 - reps))
+    if (reps >= 37) return weight; // Formula breaks down at high reps
+    return weight * (36 / (37 - reps));
+  },
+
+  renderRepsBarChart(history, isTimeBased) {
+    const recentHistory = history.slice(-12);
+    if (recentHistory.length === 0) return '<p>No data</p>';
+
+    const maxValue = Math.max(...recentHistory.flatMap(h =>
+      h.sets?.map(s => s.reps || s.seconds || 0) || [0]
+    ));
+
+    return `
+      <div class="bar-chart">
+        ${recentHistory.reverse().map((entry, i) => {
+          const date = new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          const bgColor = i % 2 === 0 ? '#f5f5f5' : '#fff';
+
+          return `
+            <div class="bar-row" style="background: ${bgColor}">
+              <div class="bar-date">${date}</div>
+              <div class="bar-sets">
+                ${entry.sets?.map(set => {
+                  const value = set.reps || set.seconds || 0;
+                  const width = (value / maxValue) * 100;
+                  return `<div class="bar" style="width: ${width}%">${value}</div>`;
+                }).join('') || '<div class="bar-empty">-</div>'}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  },
+
+  renderHistoryTab(exerciseId, exercise) {
+    const history = Storage.getExerciseHistory(exerciseId);
+    const isBodyweight = exercise.bodyweight;
+    const isTimeBased = typeof exercise.reps === 'string' && (exercise.reps.includes('sec') || exercise.reps.includes('min'));
+
+    if (history.length === 0) {
+      return '<div class="history-tab"><p>No history yet</p></div>';
+    }
+
+    let tableHeaders = '';
+    let tableRows = '';
+
+    if (!isBodyweight && !isTimeBased) {
+      // Weighted exercise
+      tableHeaders = '<th>Date</th><th>Weight</th><th>Reps</th><th>e1RM</th>';
+      tableRows = history.reverse().map(entry => {
+        const date = new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const repsDisplay = this.formatRepsDisplay(entry.sets);
+        const bestSet = entry.sets?.reduce((best, set) =>
+          (set.reps > (best?.reps || 0)) ? set : best
+        , null);
+        const e1rm = bestSet ? Math.round(this.calculateE1RM(entry.weight, bestSet.reps)) : '-';
+
+        return `
+          <tr>
+            <td>${date}</td>
+            <td>${entry.weight} lb</td>
+            <td>${repsDisplay}</td>
+            <td>${e1rm} lb</td>
+          </tr>
+        `;
+      }).join('');
+    } else if (isTimeBased) {
+      // Time-based exercise
+      tableHeaders = '<th>Date</th><th>Target</th><th>Actual</th>';
+      tableRows = history.reverse().map(entry => {
+        const date = new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const target = `${exercise.sets}×${exercise.reps}`;
+        const actual = entry.sets?.map(s => s.seconds || 0).join('/') || '-';
+
+        return `
+          <tr>
+            <td>${date}</td>
+            <td>${target}</td>
+            <td>${actual}s</td>
+          </tr>
+        `;
+      }).join('');
+    } else {
+      // Bodyweight exercise
+      tableHeaders = '<th>Date</th><th>Reps</th>';
+      tableRows = history.reverse().map(entry => {
+        const date = new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+        const reps = entry.sets?.map(s => s.reps || 0).join('/') || '-';
+
+        return `
+          <tr>
+            <td>${date}</td>
+            <td>${reps}</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    return `
+      <div class="history-tab">
+        <table class="history-table">
+          <thead>
+            <tr>${tableHeaders}</tr>
+          </thead>
+          <tbody>
+            ${tableRows}
+          </tbody>
+        </table>
+      </div>
+    `;
+  },
+
+  formatRepsDisplay(sets) {
+    if (!sets || sets.length === 0) return '-';
+    const reps = sets.map(s => s.reps || 0);
+    const allSame = reps.every(r => r === reps[0]);
+    return allSame ? `${sets.length}×${reps[0]}` : reps.join('/');
+  },
+
+  setupExerciseDetailListeners() {
+    const backBtn = document.getElementById('back-to-workout');
+    if (backBtn) {
+      backBtn.addEventListener('click', () => this.closeExerciseDetail());
+    }
+
+    // Tab switching
+    document.querySelectorAll('.tab-button').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const tab = e.target.dataset.tab;
+        this.exerciseDetail.tab = tab;
+
+        // Update active state
+        document.querySelectorAll('.tab-button').forEach(b => b.classList.remove('active'));
+        e.target.classList.add('active');
+
+        // Render new tab content
+        const { exerciseId, exercise } = this.exerciseDetail;
+        document.querySelector('.exercise-detail-content').innerHTML =
+          this.renderExerciseDetailTab(tab, exerciseId, exercise);
+
+        // Re-setup listeners for new content
+        this.setupWeightAdjustListeners();
+      });
+    });
+
+    this.setupWeightAdjustListeners();
+  },
+
+  setupWeightAdjustListeners() {
+    const { exerciseId, exercise } = this.exerciseDetail || {};
+    if (!exerciseId) return;
+
+    // Weight adjustment buttons
+    document.querySelectorAll('.weight-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const action = e.target.dataset.action;
+        let currentWeight = Storage.getExerciseWeight(exerciseId) || 135;
+
+        if (action === 'increase') currentWeight += 5;
+        if (action === 'decrease') currentWeight = Math.max(45, currentWeight - 5);
+
+        Storage.setExerciseWeight(exerciseId, currentWeight);
+        document.getElementById('weight-value').textContent = `${currentWeight} lb`;
+
+        // Update plates
+        const plates = this.calculatePlates(currentWeight);
+        document.querySelector('.plate-visualization').innerHTML = this.renderPlateBar(plates);
+      });
+    });
+
+    // Time adjustment buttons
+    document.querySelectorAll('.time-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const action = e.target.dataset.action;
+        const timeDisplay = document.getElementById('time-value');
+        let currentTime = parseInt(timeDisplay.textContent) || 60;
+
+        if (action === 'increase') currentTime += 5;
+        if (action === 'decrease') currentTime = Math.max(5, currentTime - 5);
+
+        timeDisplay.textContent = `${currentTime} sec`;
+      });
+    });
   }
 };
 
