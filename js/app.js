@@ -446,7 +446,7 @@ const App = {
       const weightInputs = exerciseItem.querySelectorAll('.set-input[data-field="weight"]');
       if (weightInputs.length > 0) {
         const firstWeightInput = weightInputs[0];
-        firstWeightInput.addEventListener('input', (e) => {
+        firstWeightInput.addEventListener('blur', (e) => {
           const weight = e.target.value;
           // Only auto-populate if subsequent sets are empty
           for (let i = 1; i < weightInputs.length; i++) {
