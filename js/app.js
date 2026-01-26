@@ -496,13 +496,21 @@ const App = {
     if (stridesCount) stridesCount.addEventListener('change', () => this.saveStridesData());
 
     // Exercise detail - click exercise name to open detail page
-    document.querySelectorAll('.clickable-exercise').forEach(header => {
+    const clickableExercises = document.querySelectorAll('.clickable-exercise');
+    console.log('Found clickable exercises:', clickableExercises.length);
+
+    clickableExercises.forEach((header, index) => {
+      console.log(`Adding click listener to exercise ${index}`);
       header.addEventListener('click', (e) => {
+        console.log('Click event fired!', e.target);
         e.preventDefault();
         e.stopPropagation();
 
         const exerciseItem = e.target.closest('.exercise-item');
-        if (!exerciseItem) return;
+        if (!exerciseItem) {
+          console.log('No exercise item found');
+          return;
+        }
 
         const exerciseId = exerciseItem.dataset.exerciseId;
         const exerciseName = exerciseItem.dataset.exerciseName;
@@ -517,6 +525,7 @@ const App = {
         const exercise = workoutDetails?.exercises.find(ex => ex.id === exerciseId);
 
         if (exercise) {
+          console.log('Found exercise, calling openExerciseDetail');
           this.openExerciseDetail(exerciseId, exerciseName, exercise);
         } else {
           console.error('Exercise not found:', exerciseId);
