@@ -2,15 +2,15 @@
 
 const CACHE_NAME = 'cim-training-v1';
 const urlsToCache = [
-  '/',
-  '/index.html',
-  '/css/styles.css',
-  '/js/app.js',
-  '/js/data.js',
-  '/js/storage.js',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png'
+  './',
+  './index.html',
+  './css/styles.css',
+  './js/app.js',
+  './js/data.js',
+  './js/storage.js',
+  './manifest.json',
+  './icons/icon-192.png',
+  './icons/icon-512.png'
 ];
 
 // Install event - cache all assets
@@ -74,7 +74,7 @@ self.addEventListener('fetch', (event) => {
           return response;
         }).catch(() => {
           // If both cache and network fail, return a fallback
-          return caches.match('/index.html');
+          return caches.match('./index.html');
         });
       })
   );
