@@ -441,6 +441,23 @@ const App = {
       input.addEventListener('change', () => this.saveExerciseData());
     });
 
+    // Auto-populate weight from set 1 to other sets
+    document.querySelectorAll('.exercise-item').forEach(exerciseItem => {
+      const weightInputs = exerciseItem.querySelectorAll('.set-input[data-field="weight"]');
+      if (weightInputs.length > 0) {
+        const firstWeightInput = weightInputs[0];
+        firstWeightInput.addEventListener('input', (e) => {
+          const weight = e.target.value;
+          // Only auto-populate if subsequent sets are empty
+          for (let i = 1; i < weightInputs.length; i++) {
+            if (!weightInputs[i].value || weightInputs[i].value === '') {
+              weightInputs[i].value = weight;
+            }
+          }
+        });
+      }
+    });
+
     // Run inputs
     const runInputs = ['run-distance', 'run-duration', 'run-avghr'];
     runInputs.forEach(id => {

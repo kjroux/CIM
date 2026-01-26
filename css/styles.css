@@ -36,6 +36,8 @@
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  /* Prevent double-tap zoom on mobile */
+  touch-action: manipulation;
 }
 
 body {
@@ -46,6 +48,9 @@ body {
   font-weight: 400;
   line-height: 1.5;
   padding-bottom: var(--nav-height);
+  /* Additional zoom prevention */
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
 }
 
 /* App Container */
