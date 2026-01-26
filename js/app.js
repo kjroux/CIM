@@ -501,12 +501,13 @@ const App = {
 
     clickableExercises.forEach((header, index) => {
       console.log(`Adding click listener to exercise ${index}`);
-      header.addEventListener('click', (e) => {
-        console.log('Click event fired!', e.target);
+      header.addEventListener('click', function(e) {
+        console.log('Click event fired!', e.target, this);
         e.preventDefault();
         e.stopPropagation();
 
-        const exerciseItem = e.target.closest('.exercise-item');
+        // Use 'this' which is the .clickable-exercise element we attached the listener to
+        const exerciseItem = this.closest('.exercise-item');
         if (!exerciseItem) {
           console.log('No exercise item found');
           return;
@@ -518,15 +519,15 @@ const App = {
         console.log('Opening exercise detail:', exerciseId, exerciseName);
 
         // Get the exercise definition from WORKOUT_DETAILS
-        const workout = this.getScheduledWorkout(this.currentDate);
-        const info = this.getWorkoutInfo(this.currentDate);
+        const workout = App.getScheduledWorkout(App.currentDate);
+        const info = App.getWorkoutInfo(App.currentDate);
         const phaseKey = `phase${info.phase}`;
         const workoutDetails = WORKOUT_DETAILS[workout.type]?.[phaseKey];
         const exercise = workoutDetails?.exercises.find(ex => ex.id === exerciseId);
 
         if (exercise) {
           console.log('Found exercise, calling openExerciseDetail');
-          this.openExerciseDetail(exerciseId, exerciseName, exercise);
+          App.openExerciseDetail(exerciseId, exerciseName, exercise);
         } else {
           console.error('Exercise not found:', exerciseId);
         }
