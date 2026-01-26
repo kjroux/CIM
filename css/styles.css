@@ -1,34 +1,34 @@
 /* CIM Training App Styles - Mobile First */
 
 :root {
-  /* Google-inspired bold primary colors */
-  --color-lift: #1A73E8;        /* Google Blue */
-  --color-run: #34A853;         /* Google Green */
+  /* Sharp Google brand colors */
+  --color-lift: #4285F4;        /* Google Blue - brighter, sharper */
+  --color-run: #0F9D58;         /* Google Green - sharper, more vibrant */
   --color-rest: #5F6368;        /* Google Gray */
-  --color-deload: #FBBC04;      /* Google Yellow */
+  --color-deload: #F4B400;      /* Google Yellow - sharper */
   --color-bg: #FFFFFF;
   --color-card: #FFFFFF;
   --color-text: #202124;        /* Google Dark Gray */
   --color-text-light: #5F6368;
   --color-border: #DADCE0;
-  --color-primary: #1A73E8;
-  --color-danger: #EA4335;      /* Google Red */
+  --color-primary: #4285F4;
+  --color-danger: #DB4437;      /* Google Red - sharper */
   --nav-height: 60px;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-lift: #8AB4F8;      /* Lighter blue for dark mode */
-    --color-run: #81C995;       /* Lighter green for dark mode */
+    --color-lift: #4285F4;      /* Keep sharp blue in dark mode */
+    --color-run: #0F9D58;       /* Keep sharp green in dark mode */
     --color-rest: #9AA0A6;
-    --color-deload: #FDD663;
+    --color-deload: #F4B400;
     --color-bg: #202124;
     --color-card: #292A2D;
     --color-text: #E8EAED;
     --color-text-light: #9AA0A6;
     --color-border: #3C4043;
-    --color-primary: #8AB4F8;
-    --color-danger: #F28B82;
+    --color-primary: #4285F4;
+    --color-danger: #DB4437;
   }
 }
 
