@@ -73,13 +73,13 @@ const WORKOUT_DETAILS = {
       name: "Lift A: Push + Squat",
       duration: "60-70 min",
       exercises: [
-        { id: "low-bar-squat", name: "Low-Bar Back Squat", sets: 3, reps: 5, notes: "To parallel" },
+        { id: "low-bar-squat", name: "Low-Bar Back Squat", sets: 3, reps: 5 },
         { id: "bench-press", name: "Bench Press", sets: 5, reps: 5 },
         { id: "overhead-press", name: "Overhead Press", sets: 3, reps: 5 },
-        { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 10, notes: "Heavy, full squeeze at top" },
+        { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 10 },
         { id: "ring-dips", name: "Ring Dips", sets: 3, reps: 5, bodyweight: true },
-        { id: "cable-pullthrough", name: "Cable Pull-Through", sets: 2, reps: 12, notes: "Squeeze glutes at lockout" },
-        { id: "plank", name: "Plank", sets: 2, reps: "30sec", notes: "Posterior pelvic tilt", bodyweight: true }
+        { id: "cable-pullthrough", name: "Cable Pull-Through", sets: 2, reps: 12 },
+        { id: "plank", name: "Plank", sets: 2, reps: "30sec", bodyweight: true }
       ]
     },
     phase2: {
@@ -113,14 +113,14 @@ const WORKOUT_DETAILS = {
       name: "Lift B: Pull + Hinge + Eccentric Quad",
       duration: "60-70 min",
       exercises: [
-        { id: "deadlift", name: "Deadlift", sets: 1, reps: 5, notes: "Squeeze glutes at lockout" },
+        { id: "deadlift", name: "Deadlift", sets: 1, reps: 5 },
         { id: "barbell-row", name: "Barbell Row", sets: 3, reps: 5 },
         { id: "pullups", name: "Pull-ups", bodyweight: true, sets: 4, reps: 6 },
-        { id: "romanian-deadlift", name: "Romanian Deadlift", sets: 3, reps: 8, notes: "Slow eccentric" },
+        { id: "romanian-deadlift", name: "Romanian Deadlift", sets: 3, reps: 8 },
         { id: "slow-tempo-squat", name: "Slow Tempo Back Squat", sets: 2, reps: 6, notes: "4 sec down, 1 sec up, 60%" },
-        { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8, notes: "Each leg, slow controlled" },
-        { id: "monster-walks", name: "Monster Walks", bodyweight: true, sets: 2, reps: 12, notes: "Each direction" },
-        { id: "side-plank", name: "Side Plank", sets: 2, reps: "20sec", notes: "Each side", bodyweight: true }
+        { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8 },
+        { id: "monster-walks", name: "Monster Walks", bodyweight: true, sets: 2, reps: 12 },
+        { id: "side-plank", name: "Side Plank", sets: 2, reps: "20sec", bodyweight: true }
       ]
     },
     phase2: {
@@ -130,10 +130,10 @@ const WORKOUT_DETAILS = {
         { id: "deadlift", name: "Deadlift", sets: 1, reps: 5 },
         { id: "slow-tempo-front-squat", name: "Slow Tempo Front Squat", sets: 3, reps: 6, notes: "4 sec down, 1 sec up" },
         { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 10 },
-        { id: "bulgarian-split-squat", name: "Bulgarian Split Squats", sets: 3, reps: 8, notes: "Each leg" },
-        { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8, notes: "Each leg, slow controlled" },
-        { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12, notes: "Each leg" },
-        { id: "monster-walks", name: "Monster Walks", bodyweight: true, sets: 2, reps: 12, notes: "Each direction" }
+        { id: "bulgarian-split-squat", name: "Bulgarian Split Squats", sets: 3, reps: 8 },
+        { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8 },
+        { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12 },
+        { id: "monster-walks", name: "Monster Walks", bodyweight: true, sets: 2, reps: 12 }
       ]
     },
     phase3: {
@@ -143,8 +143,8 @@ const WORKOUT_DETAILS = {
         { id: "deadlift", name: "Deadlift", sets: 1, reps: 5 },
         { id: "slow-tempo-squat", name: "Slow Tempo Squat", sets: 2, reps: 6, notes: "4 sec down, any variation" },
         { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 8 },
-        { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8, notes: "Each leg, slow controlled" },
-        { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12, notes: "Each leg" }
+        { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8 },
+        { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12 }
       ]
     }
   },
@@ -153,12 +153,12 @@ const WORKOUT_DETAILS = {
       name: "Lift C: Legs + Glutes",
       duration: "60-75 min",
       exercises: [
-        { id: "front-squat", name: "Front Squat", sets: 3, reps: 8, notes: "Upright torso" },
-        { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 4, reps: 8, notes: "Go heavy, pause at top" },
-        { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", sets: 3, reps: 8, notes: "Each leg, lean forward" },
-        { id: "step-ups", name: "Step-Ups", bodyweight: true, sets: 3, reps: 10, notes: "Each leg, drive through heel" },
-        { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12, notes: "Each leg" },
-        { id: "core-circuit", name: "Core Circuit", sets: 1, reps: "5min", notes: "Dead bugs, bird dogs, side plank, pallof press", bodyweight: true }
+        { id: "front-squat", name: "Front Squat", sets: 3, reps: 8 },
+        { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 4, reps: 8 },
+        { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", sets: 3, reps: 8 },
+        { id: "step-ups", name: "Step-Ups", bodyweight: true, sets: 3, reps: 10 },
+        { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12 },
+        { id: "core-circuit", name: "Core Circuit", sets: 1, reps: "5min", bodyweight: true }
       ]
     }
   },
