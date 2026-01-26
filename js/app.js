@@ -302,8 +302,10 @@ const App = {
       return `
         <div class="exercise-item" data-exercise-id="${ex.id}" data-exercise-name="${ex.name}">
           <div class="exercise-header clickable-exercise">
-            <h4>${ex.name}</h4>
-            <span class="exercise-target">${ex.sets}x${repsDisplay}</span>
+            <div class="exercise-header-content">
+              <h4>${ex.name} →</h4>
+              <span class="exercise-target">${ex.sets}x${repsDisplay}</span>
+            </div>
           </div>
           ${ex.notes ? `<p class="exercise-notes">${ex.notes}</p>` : ''}
           <div class="exercise-sets">
@@ -496,9 +498,16 @@ const App = {
     // Exercise detail - click exercise name to open detail page
     document.querySelectorAll('.clickable-exercise').forEach(header => {
       header.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+
         const exerciseItem = e.target.closest('.exercise-item');
+        if (!exerciseItem) return;
+
         const exerciseId = exerciseItem.dataset.exerciseId;
         const exerciseName = exerciseItem.dataset.exerciseName;
+
+        console.log('Opening exercise detail:', exerciseId, exerciseName);
 
         // Get the exercise definition from WORKOUT_DETAILS
         const workout = this.getScheduledWorkout(this.currentDate);
@@ -509,6 +518,8 @@ const App = {
 
         if (exercise) {
           this.openExerciseDetail(exerciseId, exerciseName, exercise);
+        } else {
+          console.error('Exercise not found:', exerciseId);
         }
       });
     });

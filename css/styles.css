@@ -219,15 +219,20 @@ body {
 }
 
 .exercise-header {
+  margin-bottom: 8px;
+}
+
+.exercise-header-content {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  width: 100%;
 }
 
 .exercise-header h4 {
   font-size: 16px;
   font-weight: 600;
+  color: var(--color-primary);
 }
 
 .exercise-target {
@@ -962,11 +967,15 @@ body {
 
 /* Make exercise headers clickable */
 
+.exercise-item {
+  margin-bottom: 20px;
+}
+
 .clickable-exercise {
   cursor: pointer;
   transition: background 0.2s;
   padding: 12px;
-  margin: -12px;
+  margin-bottom: 12px;
   border-radius: 8px;
 }
 
