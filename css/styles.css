@@ -1,0 +1,658 @@
+/* CIM Training App Styles - Mobile First */
+
+:root {
+  /* Google-inspired bold primary colors */
+  --color-lift: #1A73E8;        /* Google Blue */
+  --color-run: #34A853;         /* Google Green */
+  --color-rest: #5F6368;        /* Google Gray */
+  --color-deload: #FBBC04;      /* Google Yellow */
+  --color-bg: #FFFFFF;
+  --color-card: #FFFFFF;
+  --color-text: #202124;        /* Google Dark Gray */
+  --color-text-light: #5F6368;
+  --color-border: #DADCE0;
+  --color-primary: #1A73E8;
+  --color-danger: #EA4335;      /* Google Red */
+  --nav-height: 60px;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-lift: #8AB4F8;      /* Lighter blue for dark mode */
+    --color-run: #81C995;       /* Lighter green for dark mode */
+    --color-rest: #9AA0A6;
+    --color-deload: #FDD663;
+    --color-bg: #202124;
+    --color-card: #292A2D;
+    --color-text: #E8EAED;
+    --color-text-light: #9AA0A6;
+    --color-border: #3C4043;
+    --color-primary: #8AB4F8;
+    --color-danger: #F28B82;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.5;
+  padding-bottom: var(--nav-height);
+}
+
+/* App Container */
+#app {
+  min-height: 100vh;
+}
+
+#main-content {
+  padding: 0;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Bottom Navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  background-color: var(--color-card);
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 100;
+}
+
+.nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--color-text-light);
+  text-decoration: none;
+  font-size: 12px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.nav-item.active {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.nav-icon {
+  font-size: 24px;
+  margin-bottom: 2px;
+}
+
+/* TODAY VIEW */
+.today-view {
+  padding-bottom: 20px;
+}
+
+.today-header {
+  padding: 20px;
+  color: white;
+  text-align: center;
+}
+
+.today-header.workout-lift {
+  background-color: var(--color-lift);
+}
+
+.today-header.workout-run {
+  background-color: var(--color-run);
+}
+
+.today-header.workout-rest {
+  background-color: var(--color-rest);
+}
+
+.date-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.date-nav h2 {
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.btn-icon {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px 12px;
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.phase-info {
+  font-size: 14px;
+  opacity: 0.9;
+}
+
+.deload-badge {
+  display: inline-block;
+  background-color: var(--color-deload);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 12px;
+  margin-left: 8px;
+  font-weight: 600;
+}
+
+.workout-content {
+  padding: 20px;
+  background-color: var(--color-card);
+}
+
+.workout-content h2 {
+  font-size: 22px;
+  margin-bottom: 8px;
+}
+
+.workout-duration {
+  color: var(--color-text-light);
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.workout-desc {
+  color: var(--color-text-light);
+  margin: 12px 0;
+}
+
+.workout-notes {
+  background-color: #F0F7FF;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 14px;
+  margin: 12px 0;
+  color: var(--color-text);
+}
+
+.workout-empty {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--color-text-light);
+}
+
+/* Exercises */
+.exercises-list {
+  margin-top: 20px;
+}
+
+.exercise-item {
+  background-color: var(--color-bg);
+  padding: 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.exercise-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.exercise-header h4 {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.exercise-target {
+  color: var(--color-text-light);
+  font-size: 14px;
+}
+
+.exercise-notes {
+  font-size: 13px;
+  color: var(--color-text-light);
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
+.exercise-sets {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.set-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+}
+
+.set-number {
+  min-width: 50px;
+  color: var(--color-text-light);
+}
+
+.set-input {
+  width: 70px;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+/* Run Inputs */
+.run-protocol {
+  background-color: var(--color-bg);
+  padding: 16px;
+  border-radius: 8px;
+  margin: 16px 0;
+}
+
+.run-protocol h3 {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.protocol-text {
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.protocol-detail {
+  font-size: 14px;
+  color: var(--color-text-light);
+}
+
+.target-miles {
+  background-color: #E8F5E9;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  color: #2E7D32;
+  margin: 12px 0;
+}
+
+.run-inputs {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.input-group label {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-text-light);
+}
+
+.input-group input {
+  padding: 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 16px;
+}
+
+.strides-input {
+  background-color: var(--color-bg);
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+/* Daily Routines */
+.daily-routines {
+  background-color: var(--color-card);
+  padding: 20px;
+  margin-top: 8px;
+}
+
+.daily-routines h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.routine-checkbox {
+  display: flex;
+  align-items: center;
+  padding: 12px 0;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.routine-checkbox input[type="checkbox"] {
+  width: 24px;
+  height: 24px;
+  margin-right: 12px;
+  cursor: pointer;
+}
+
+/* Workout Notes */
+.workout-notes {
+  background-color: var(--color-card);
+  padding: 20px;
+  margin-top: 8px;
+}
+
+.workout-notes label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--color-text-light);
+}
+
+.workout-notes textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: vertical;
+}
+
+/* Workout Actions */
+.workout-actions {
+  padding: 20px;
+  display: flex;
+  gap: 12px;
+  background-color: var(--color-card);
+  margin-top: 8px;
+}
+
+.btn {
+  flex: 1;
+  padding: 10px 24px;
+  border: none;
+  border-radius: 4px;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.25px;
+  cursor: pointer;
+  min-height: 36px;
+  transition: background-color 0.2s, box-shadow 0.2s;
+  text-transform: uppercase;
+}
+
+.btn:hover {
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
+}
+
+.btn:active {
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+}
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #1765CC;
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--color-primary);
+  border: 1px solid var(--color-border);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(26, 115, 232, 0.04);
+}
+
+.btn-danger {
+  background-color: var(--color-danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #D33B2C;
+}
+
+/* WEEK VIEW */
+.week-view {
+  padding: 20px;
+  background-color: var(--color-card);
+  min-height: calc(100vh - var(--nav-height));
+}
+
+.week-header {
+  margin-bottom: 24px;
+}
+
+.week-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+}
+
+.week-nav .btn-icon {
+  color: var(--color-primary);
+}
+
+.week-title {
+  flex: 1;
+  text-align: center;
+}
+
+.week-title h2 {
+  font-size: 20px;
+  margin-bottom: 4px;
+}
+
+.week-title p {
+  font-size: 14px;
+  color: var(--color-text-light);
+  margin-bottom: 2px;
+}
+
+.week-dates {
+  font-size: 13px;
+}
+
+.week-days {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  margin-bottom: 24px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.week-day {
+  background-color: var(--color-card);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: background-color 0.15s;
+  border-left: 4px solid transparent;
+}
+
+.week-day:hover {
+  background-color: var(--color-bg);
+}
+
+.week-day:active {
+  background-color: var(--color-border);
+}
+
+.week-day.day-lift {
+  border-left-color: var(--color-lift);
+}
+
+.week-day.day-run {
+  border-left-color: var(--color-run);
+}
+
+.week-day.day-rest {
+  border-left-color: var(--color-rest);
+}
+
+.day-left {
+  min-width: 80px;
+}
+
+.day-name {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-text);
+  margin-bottom: 2px;
+}
+
+.day-date {
+  font-size: 12px;
+  color: var(--color-text-light);
+}
+
+.day-middle {
+  flex: 1;
+  padding: 0 16px;
+}
+
+.day-workout {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.day-right {
+  min-width: 40px;
+  text-align: center;
+}
+
+.day-status {
+  font-size: 24px;
+}
+
+.week-summary {
+  background-color: var(--color-bg);
+  padding: 16px;
+  border-radius: 8px;
+}
+
+.summary-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  font-size: 15px;
+}
+
+.summary-label {
+  color: var(--color-text-light);
+}
+
+.summary-value {
+  font-weight: 600;
+}
+
+/* SETTINGS VIEW */
+.settings-view {
+  padding: 20px;
+  background-color: var(--color-card);
+  min-height: calc(100vh - var(--nav-height));
+}
+
+.settings-view h2 {
+  font-size: 24px;
+  margin-bottom: 24px;
+}
+
+.setting-item {
+  margin-bottom: 32px;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.setting-item:last-child {
+  border-bottom: none;
+}
+
+.setting-item h3 {
+  font-size: 18px;
+  margin-bottom: 12px;
+}
+
+.setting-item label {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-bottom: 8px;
+  color: var(--color-text-light);
+}
+
+.setting-item input[type="date"] {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  font-size: 16px;
+  margin-bottom: 12px;
+}
+
+.setting-note {
+  font-size: 13px;
+  color: var(--color-text-light);
+  margin-top: 8px;
+}
+
+.settings-view .btn {
+  width: 100%;
+}
+
+/* Responsive adjustments for larger screens */
+@media (min-width: 768px) {
+  .week-days {
+    gap: 12px;
+  }
+
+  .week-day {
+    padding: 16px 8px;
+  }
+
+  .day-name {
+    font-size: 12px;
+  }
+
+  .day-date {
+    font-size: 20px;
+  }
+
+  .day-workout {
+    font-size: 12px;
+  }
+}
+
+/* Dark mode already defined at top of file */

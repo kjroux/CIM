@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Test Dates</title>
+  <style>
+    body { font-family: monospace; padding: 20px; }
+    pre { background: #f0f0f0; padding: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Date Calculation Test</h1>
+  <pre id="output"></pre>
+
+  <script src="/js/storage.js"></script>
+  <script src="/js/data.js"></script>
+  <script src="/js/app.js"></script>
+
+  <script>
+    Storage.initUserData();
+    const output = [];
+
+    const startDate = Storage.getStartDate();
+    output.push(`Start Date: ${startDate}`);
+    output.push('');
+
+    // Test Feb 2, 2026 (should be Week 1, Day 1)
+    const testDates = [
+      '2026-02-02',  // Week 1, Day 1 (Monday)
+      '2026-02-03',  // Week 1, Day 2 (Tuesday)
+      '2026-02-04',  // Week 1, Day 3 (Wednesday)
+      '2026-02-08',  // Week 1, Day 7 (Sunday)
+      '2026-02-09',  // Week 2, Day 1 (Monday)
+    ];
+
+    testDates.forEach(date => {
+      const info = App.getProgramInfo(date);
+      const workout = App.getScheduledWorkout(date);
+      output.push(`${date}:`);
+      output.push(`  Status: ${info.status}`);
+      output.push(`  Week: ${info.week}, Day: ${info.dayOfWeek}`);
+      output.push(`  Phase: ${info.phase}`);
+      output.push(`  Workout: ${workout ? workout.name : 'NONE'}`);
+      output.push('');
+    });
+
+    document.getElementById('output').textContent = output.join('\n');
+  </script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Clear Storage</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      text-align: center;
+    }
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      background: #EA4335;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      background: #D33B2C;
+    }
+    .success {
+      color: #34A853;
+      font-weight: bold;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <h1>CIM Training App - Storage Management</h1>
+  <p>Current start date: <strong id="current-date">Loading...</strong></p>
+
+  <button onclick="clearStorage()">Clear All Data & Reload</button>
+
+  <div id="message"></div>
+
+  <script>
+    // Show current start date
+    const data = localStorage.getItem('cim_user_data');
+    if (data) {
+      const parsed = JSON.parse(data);
+      document.getElementById('current-date').textContent = parsed.startDate || 'Not set';
+    } else {
+      document.getElementById('current-date').textContent = 'No data stored';
+    }
+
+    function clearStorage() {
+      localStorage.clear();
+      document.getElementById('message').innerHTML =
+        '<div class="success">✓ All data cleared! Redirecting...</div>';
+      setTimeout(() => {
+        window.location.href = '/';
+      }, 1500);
+    }
+  </script>
+</body>
+</html>
