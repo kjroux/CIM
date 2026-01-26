@@ -318,14 +318,27 @@ const App = {
     let sets = [];
     for (let i = 0; i < exercise.sets; i++) {
       const logged = loggedSets[i] || { weight: '', reps: '' };
-      sets.push(`
-        <div class="set-row">
-          <span class="set-number">Set ${i + 1}:</span>
-          <input type="number" class="set-input" placeholder="Weight" value="${logged.weight}" data-set="${i}" data-field="weight">
-          <span>lbs x</span>
-          <input type="number" class="set-input" placeholder="Reps" value="${logged.reps}" data-set="${i}" data-field="reps">
-        </div>
-      `);
+
+      if (exercise.bodyweight) {
+        // Bodyweight exercises - only show reps
+        sets.push(`
+          <div class="set-row">
+            <span class="set-number">Set ${i + 1}:</span>
+            <input type="number" class="set-input" placeholder="Reps" value="${logged.reps}" data-set="${i}" data-field="reps">
+            <span>reps</span>
+          </div>
+        `);
+      } else {
+        // Weighted exercises - show weight and reps
+        sets.push(`
+          <div class="set-row">
+            <span class="set-number">Set ${i + 1}:</span>
+            <input type="number" class="set-input" placeholder="Weight" value="${logged.weight}" data-set="${i}" data-field="weight">
+            <span>lbs x</span>
+            <input type="number" class="set-input" placeholder="Reps" value="${logged.reps}" data-set="${i}" data-field="reps">
+          </div>
+        `);
+      }
     }
     return sets.join('');
   },
