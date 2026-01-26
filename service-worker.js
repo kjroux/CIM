@@ -1,6 +1,6 @@
 // CIM Training App - Service Worker for Offline Support
 
-const CACHE_NAME = 'cim-training-v4-phase1';
+const CACHE_NAME = 'cim-training-v2.1';
 const urlsToCache = [
   './',
   './index.html',
