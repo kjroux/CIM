@@ -6,6 +6,7 @@ const App = {
   currentWeek: 1,
   exerciseDetail: null, // { exerciseId, exerciseName, exercise, tab: 'weight' }
   previousView: null, // For returning from exercise detail
+  restTimer: { visible: false, startTime: null, interval: null }, // Phase 3: Rest timer
 
   init() {
     // Initialize storage
@@ -45,6 +46,11 @@ const App = {
 
   renderView(viewName) {
     this.currentView = viewName;
+
+    // Clear rest timer if navigating away from today view
+    if (viewName !== 'today') {
+      this.stopRestTimer();
+    }
 
     // Update nav active state
     document.querySelectorAll('.nav-item').forEach(item => {
@@ -626,6 +632,8 @@ const App = {
           } else {
             button.classList.add('completed');
             button.dataset.completed = 'true';
+            // Phase 3: Start rest timer when set becomes completed
+            this.startRestTimer();
           }
 
           this.saveSetData(exerciseItem, setIndex, newValue, true, isTimeBased);
@@ -638,6 +646,9 @@ const App = {
           button.textContent = target + (isTimeBased ? 's' : '');
 
           this.saveSetData(exerciseItem, setIndex, target, true, isTimeBased);
+
+          // Phase 3: Start rest timer
+          this.startRestTimer();
         }
       });
     });
@@ -750,6 +761,9 @@ const App = {
     button.textContent = value + (isTimeBased ? 's' : '');
 
     this.saveSetData(exerciseItem, setIndex, value, true, isTimeBased);
+
+    // Phase 3: Start rest timer
+    this.startRestTimer();
   },
 
   addExtraSet(addButton) {
@@ -843,6 +857,7 @@ const App = {
 
   navigateDay(delta) {
     this.currentDate = this.addDays(this.currentDate, delta);
+    this.stopRestTimer(); // Clear timer when changing days
     this.renderView('today');
   },
 
@@ -1589,6 +1604,77 @@ const App = {
         timeDisplay.textContent = `${currentTime} sec`;
       });
     });
+  },
+
+  // PHASE 3: REST TIMER
+
+  startRestTimer() {
+    // Stop any existing timer
+    this.stopRestTimer();
+
+    // Start new timer
+    this.restTimer.visible = true;
+    this.restTimer.startTime = Date.now();
+
+    // Update timer display
+    this.updateRestTimerDisplay();
+
+    // Start interval
+    this.restTimer.interval = setInterval(() => {
+      this.updateRestTimerDisplay();
+    }, 1000);
+  },
+
+  stopRestTimer() {
+    if (this.restTimer.interval) {
+      clearInterval(this.restTimer.interval);
+      this.restTimer.interval = null;
+    }
+    this.restTimer.visible = false;
+    this.restTimer.startTime = null;
+
+    // Remove timer element if it exists
+    const timerElement = document.getElementById('rest-timer');
+    if (timerElement) {
+      timerElement.remove();
+    }
+  },
+
+  updateRestTimerDisplay() {
+    if (!this.restTimer.visible || !this.restTimer.startTime) return;
+
+    const elapsed = Math.floor((Date.now() - this.restTimer.startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    const timeString = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+
+    // Check if timer element exists
+    let timerElement = document.getElementById('rest-timer');
+
+    if (!timerElement) {
+      // Create timer element
+      timerElement = document.createElement('div');
+      timerElement.id = 'rest-timer';
+      timerElement.className = 'rest-timer';
+      timerElement.innerHTML = `
+        <span class="rest-timer-label">Rest:</span>
+        <span class="rest-timer-time">${timeString}</span>
+        <button class="rest-timer-dismiss">×</button>
+      `;
+      document.body.appendChild(timerElement);
+
+      // Add dismiss listener
+      const dismissBtn = timerElement.querySelector('.rest-timer-dismiss');
+      dismissBtn.addEventListener('click', () => {
+        this.stopRestTimer();
+      });
+    } else {
+      // Update existing timer
+      const timeDisplay = timerElement.querySelector('.rest-timer-time');
+      if (timeDisplay) {
+        timeDisplay.textContent = timeString;
+      }
+    }
   }
 };
 
