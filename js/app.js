@@ -326,32 +326,30 @@ const App = {
 
   renderExerciseSets(exercise, loggedSets, weight) {
     let sets = [];
-    for (let i = 0; i < exercise.sets; i++) {
-      const logged = loggedSets[i] || { reps: '' };
+    const isTimeBased = typeof exercise.reps === 'string' && (exercise.reps.includes('sec') || exercise.reps.includes('min'));
+    const targetValue = isTimeBased ? parseInt(exercise.reps) : exercise.reps;
 
-      if (exercise.bodyweight) {
-        // Bodyweight exercises - only show reps
-        sets.push(`
-          <div class="set-row">
-            <span class="set-number">Set ${i + 1}:</span>
-            <input type="number" class="set-input" placeholder="Reps" value="${logged.reps}" data-set="${i}" data-field="reps">
-            <span>reps</span>
-          </div>
-        `);
-      } else {
-        // Weighted exercises - show weight and reps
-        // Weight is shared across all sets for this exercise
-        sets.push(`
-          <div class="set-row">
-            <span class="set-number">Set ${i + 1}:</span>
-            <input type="number" class="set-input" placeholder="Weight" value="${weight}" data-set="${i}" data-field="weight">
-            <span>lbs x</span>
-            <input type="number" class="set-input" placeholder="Reps" value="${logged.reps}" data-set="${i}" data-field="reps">
-          </div>
-        `);
-      }
+    for (let i = 0; i < exercise.sets; i++) {
+      const logged = loggedSets[i] || { reps: '', completed: false };
+      const isCompleted = logged.completed || false;
+      const actualValue = logged.reps || (isTimeBased ? logged.seconds : '') || '';
+
+      // Display value: show actual if logged, otherwise show target
+      const displayValue = actualValue || targetValue;
+      const buttonClass = isCompleted ? 'set-button completed' : 'set-button';
+
+      sets.push(`
+        <button class="${buttonClass}"
+                data-set="${i}"
+                data-target="${targetValue}"
+                data-actual="${actualValue}"
+                data-completed="${isCompleted}"
+                data-time-based="${isTimeBased}">
+          ${displayValue}${isTimeBased ? 's' : ''}
+        </button>
+      `);
     }
-    return sets.join('');
+    return `<div class="set-buttons">${sets.join('')}</div>`;
   },
 
   renderRunWorkout(workout, info, log) {
@@ -460,27 +458,8 @@ const App = {
     if (incompleteBtn) incompleteBtn.addEventListener('click', () => this.markIncomplete());
     if (unskipBtn) unskipBtn.addEventListener('click', () => this.unskipWorkout());
 
-    // Exercise inputs - save on change
-    document.querySelectorAll('.set-input').forEach(input => {
-      input.addEventListener('change', () => this.saveExerciseData());
-    });
-
-    // Auto-populate weight from set 1 to other sets
-    document.querySelectorAll('.exercise-item').forEach(exerciseItem => {
-      const weightInputs = exerciseItem.querySelectorAll('.set-input[data-field="weight"]');
-      if (weightInputs.length > 0) {
-        const firstWeightInput = weightInputs[0];
-        firstWeightInput.addEventListener('blur', (e) => {
-          const weight = e.target.value;
-          // Only auto-populate if subsequent sets are empty
-          for (let i = 1; i < weightInputs.length; i++) {
-            if (!weightInputs[i].value || weightInputs[i].value === '') {
-              weightInputs[i].value = weight;
-            }
-          }
-        });
-      }
-    });
+    // Phase 2: Tap-to-Record Sets
+    this.setupTapToRecordListeners();
 
     // Run inputs
     const runInputs = ['run-distance', 'run-duration', 'run-avghr'];
@@ -533,6 +512,110 @@ const App = {
         }
       });
     });
+  },
+
+  setupTapToRecordListeners() {
+    const setButtons = document.querySelectorAll('.set-button');
+
+    setButtons.forEach(button => {
+      let lastTapTime = 0;
+
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const now = Date.now();
+        const timeSinceLastTap = now - lastTapTime;
+        lastTapTime = now;
+
+        const exerciseItem = button.closest('.exercise-item');
+        const setIndex = parseInt(button.dataset.set);
+        const target = parseInt(button.dataset.target);
+        const isTimeBased = button.dataset.timeBased === 'true';
+        const isCompleted = button.dataset.completed === 'true';
+
+        // Delayed tap on completed set - clear/undo (>500ms)
+        if (isCompleted && timeSinceLastTap > 500) {
+          this.clearSet(button, exerciseItem, setIndex);
+          return;
+        }
+
+        // Rapid tap - decrement (<500ms)
+        if (timeSinceLastTap < 500 && timeSinceLastTap > 0) {
+          const currentValue = parseInt(button.textContent) || target;
+          const decrementAmount = isTimeBased ? 5 : 1;
+          const newValue = Math.max(0, currentValue - decrementAmount);
+
+          button.textContent = newValue + (isTimeBased ? 's' : '');
+          button.dataset.actual = newValue;
+
+          if (newValue === 0) {
+            button.classList.remove('completed');
+            button.dataset.completed = 'false';
+          } else {
+            button.classList.add('completed');
+            button.dataset.completed = 'true';
+          }
+
+          this.saveSetData(exerciseItem, setIndex, newValue, true, isTimeBased);
+        }
+        // Single tap - mark complete at target
+        else {
+          button.classList.add('completed');
+          button.dataset.completed = 'true';
+          button.dataset.actual = target;
+          button.textContent = target + (isTimeBased ? 's' : '');
+
+          this.saveSetData(exerciseItem, setIndex, target, true, isTimeBased);
+        }
+      });
+    });
+  },
+
+  clearSet(button, exerciseItem, setIndex) {
+    const target = parseInt(button.dataset.target);
+    const isTimeBased = button.dataset.timeBased === 'true';
+
+    button.classList.remove('completed');
+    button.dataset.completed = 'false';
+    button.dataset.actual = '';
+    button.textContent = target + (isTimeBased ? 's' : '');
+
+    this.saveSetData(exerciseItem, setIndex, '', false, isTimeBased);
+  },
+
+  saveSetData(exerciseItem, setIndex, value, completed, isTimeBased) {
+    const exerciseId = exerciseItem.dataset.exerciseId;
+    const log = Storage.getLog(this.currentDate) || {};
+
+    if (!log.exercises) log.exercises = {};
+    if (!log.exercises[exerciseId]) {
+      log.exercises[exerciseId] = { sets: [] };
+    }
+
+    // Ensure sets array is large enough
+    while (log.exercises[exerciseId].sets.length <= setIndex) {
+      log.exercises[exerciseId].sets.push({ reps: '', completed: false });
+    }
+
+    // Update the specific set
+    if (isTimeBased) {
+      log.exercises[exerciseId].sets[setIndex] = {
+        seconds: value,
+        completed: completed
+      };
+    } else {
+      log.exercises[exerciseId].sets[setIndex] = {
+        reps: value,
+        completed: completed
+      };
+    }
+
+    // Get weight from exercise detail storage
+    const weight = Storage.getExerciseWeight(exerciseId);
+    if (weight) {
+      log.exercises[exerciseId].weight = weight;
+    }
+
+    Storage.saveLog(this.currentDate, log);
   },
 
   navigateDay(delta) {
@@ -620,8 +703,7 @@ const App = {
     log.completed = true;
     log.skipped = false;
 
-    // Save any current form data
-    this.saveExerciseData();
+    // Save any current form data (exercise data is now saved on tap)
     this.saveRunData();
     this.saveStridesData();
     this.saveNotes();
