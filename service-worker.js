@@ -1,6 +1,6 @@
 // CIM Training App - Service Worker for Offline Support
 
-const CACHE_NAME = 'cim-training-v3.2-phase3';
+const CACHE_NAME = 'cim-training-v3.3-sw-fix';
 const urlsToCache = [
   './',
   './index.html',
@@ -15,67 +15,90 @@ const urlsToCache = [
 
 // Install event - cache all assets
 self.addEventListener('install', (event) => {
+  console.log('[ServiceWorker] Installing version:', CACHE_NAME);
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then((cache) => {
-        console.log('Opened cache');
+        console.log('[ServiceWorker] Opened cache:', CACHE_NAME);
         return cache.addAll(urlsToCache);
       })
+      .then(() => {
+        console.log('[ServiceWorker] All files cached successfully');
+      })
   );
-  // Force the waiting service worker to become the active service worker
+  // Force the waiting service worker to become the active service worker immediately
   self.skipWaiting();
 });
 
 // Activate event - clean up old caches
 self.addEventListener('activate', (event) => {
+  console.log('[ServiceWorker] Activating version:', CACHE_NAME);
   event.waitUntil(
     caches.keys().then((cacheNames) => {
       return Promise.all(
         cacheNames.map((cacheName) => {
           if (cacheName !== CACHE_NAME) {
-            console.log('Deleting old cache:', cacheName);
+            console.log('[ServiceWorker] Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })
       );
+    }).then(() => {
+      console.log('[ServiceWorker] Old caches deleted, claiming clients');
+      // Take control of all pages immediately without waiting for reload
+      return self.clients.claim();
     })
   );
-  // Take control of all pages immediately
-  return self.clients.claim();
 });
 
-// Fetch event - serve from cache, fall back to network
+// Fetch event - Network first for HTML/JS/CSS, cache for everything else
 self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Cache hit - return response
-        if (response) {
+  const url = new URL(event.request.url);
+
+  // For HTML, JS, CSS files - always try network first to get latest version
+  if (url.pathname.endsWith('.html') ||
+      url.pathname.endsWith('.js') ||
+      url.pathname.endsWith('.css') ||
+      url.pathname === '/' ||
+      url.pathname === './') {
+
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          // Update cache with new version
+          const responseToCache = response.clone();
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, responseToCache);
+          });
           return response;
-        }
-
-        // Clone the request
-        const fetchRequest = event.request.clone();
-
-        return fetch(fetchRequest).then((response) => {
-          // Check if valid response
-          if (!response || response.status !== 200 || response.type !== 'basic') {
+        })
+        .catch(() => {
+          // Network failed, try cache
+          return caches.match(event.request);
+        })
+    );
+  } else {
+    // For other resources (images, etc.) - cache first
+    event.respondWith(
+      caches.match(event.request)
+        .then((response) => {
+          if (response) {
             return response;
           }
 
-          // Clone the response
-          const responseToCache = response.clone();
+          return fetch(event.request).then((response) => {
+            if (!response || response.status !== 200 || response.type !== 'basic') {
+              return response;
+            }
 
-          caches.open(CACHE_NAME)
-            .then((cache) => {
+            const responseToCache = response.clone();
+            caches.open(CACHE_NAME).then((cache) => {
               cache.put(event.request, responseToCache);
             });
 
-          return response;
-        }).catch(() => {
-          // If both cache and network fail, return a fallback
-          return caches.match('./index.html');
-        });
-      })
-  );
+            return response;
+          });
+        })
+    );
+  }
 });

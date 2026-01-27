@@ -28,8 +28,37 @@ const App = {
   registerServiceWorker() {
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('./service-worker.js')
-        .then(reg => console.log('Service Worker registered'))
-        .catch(err => console.log('Service Worker registration failed:', err));
+        .then(reg => {
+          console.log('[App] Service Worker registered');
+
+          // Check for updates every 60 seconds
+          setInterval(() => {
+            reg.update();
+          }, 60000);
+
+          // Handle updates
+          reg.addEventListener('updatefound', () => {
+            const newWorker = reg.installing;
+            console.log('[App] New service worker found, installing...');
+
+            newWorker.addEventListener('statechange', () => {
+              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                // New service worker available, prompt user to reload
+                console.log('[App] New version available! Reloading in 2 seconds...');
+                setTimeout(() => {
+                  window.location.reload();
+                }, 2000);
+              }
+            });
+          });
+        })
+        .catch(err => console.log('[App] Service Worker registration failed:', err));
+
+      // Listen for controller change and reload page
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        console.log('[App] Controller changed, reloading page');
+        window.location.reload();
+      });
     }
   },
 
