@@ -329,7 +329,9 @@ const App = {
     const isTimeBased = typeof exercise.reps === 'string' && (exercise.reps.includes('sec') || exercise.reps.includes('min'));
     const targetValue = isTimeBased ? parseInt(exercise.reps) : exercise.reps;
 
-    for (let i = 0; i < exercise.sets; i++) {
+    // Render programmed sets
+    const numSets = exercise.sets;
+    for (let i = 0; i < numSets; i++) {
       const logged = loggedSets[i] || { reps: '', completed: false };
       const isCompleted = logged.completed || false;
       const actualValue = logged.reps || (isTimeBased ? logged.seconds : '') || '';
@@ -344,11 +346,42 @@ const App = {
                 data-target="${targetValue}"
                 data-actual="${actualValue}"
                 data-completed="${isCompleted}"
-                data-time-based="${isTimeBased}">
+                data-time-based="${isTimeBased}"
+                data-is-extra="false">
           ${displayValue}${isTimeBased ? 's' : ''}
         </button>
       `);
     }
+
+    // Render extra sets if they exist in logged data
+    for (let i = numSets; i < loggedSets.length; i++) {
+      const logged = loggedSets[i];
+      const isCompleted = logged.completed || false;
+      const actualValue = logged.reps || (isTimeBased ? logged.seconds : '') || '';
+
+      const displayValue = actualValue || targetValue;
+      const buttonClass = isCompleted ? 'set-button completed extra-set' : 'set-button extra-set';
+
+      sets.push(`
+        <button class="${buttonClass}"
+                data-set="${i}"
+                data-target="${targetValue}"
+                data-actual="${actualValue}"
+                data-completed="${isCompleted}"
+                data-time-based="${isTimeBased}"
+                data-is-extra="true">
+          ${displayValue}${isTimeBased ? 's' : ''}
+        </button>
+      `);
+    }
+
+    // Add the + button for adding extra sets
+    sets.push(`
+      <button class="set-button add-set-button" data-target="${targetValue}" data-time-based="${isTimeBased}">
+        +
+      </button>
+    `);
+
     return `<div class="set-buttons">${sets.join('')}</div>`;
   },
 
@@ -515,13 +548,47 @@ const App = {
   },
 
   setupTapToRecordListeners() {
-    const setButtons = document.querySelectorAll('.set-button');
+    const setButtons = document.querySelectorAll('.set-button:not(.add-set-button)');
+    const addSetButtons = document.querySelectorAll('.add-set-button');
 
+    // Setup long-press and tap listeners for regular set buttons
     setButtons.forEach(button => {
       let lastTapTime = 0;
+      let longPressTimer = null;
+      let longPressTriggered = false;
+
+      const startLongPress = (e) => {
+        longPressTriggered = false;
+        longPressTimer = setTimeout(() => {
+          longPressTriggered = true;
+          this.openSetPicker(button);
+        }, 500);
+      };
+
+      const cancelLongPress = () => {
+        if (longPressTimer) {
+          clearTimeout(longPressTimer);
+          longPressTimer = null;
+        }
+      };
+
+      button.addEventListener('touchstart', startLongPress);
+      button.addEventListener('mousedown', startLongPress);
+
+      button.addEventListener('touchend', cancelLongPress);
+      button.addEventListener('touchcancel', cancelLongPress);
+      button.addEventListener('mouseup', cancelLongPress);
+      button.addEventListener('mouseleave', cancelLongPress);
 
       button.addEventListener('click', (e) => {
         e.preventDefault();
+
+        // If long press was triggered, don't handle the click
+        if (longPressTriggered) {
+          longPressTriggered = false;
+          return;
+        }
+
         const now = Date.now();
         const timeSinceLastTap = now - lastTapTime;
         lastTapTime = now;
@@ -531,10 +598,16 @@ const App = {
         const target = parseInt(button.dataset.target);
         const isTimeBased = button.dataset.timeBased === 'true';
         const isCompleted = button.dataset.completed === 'true';
+        const isExtra = button.dataset.isExtra === 'true';
 
         // Delayed tap on completed set - clear/undo (>500ms)
+        // For extra sets, delayed tap removes the set
         if (isCompleted && timeSinceLastTap > 500) {
-          this.clearSet(button, exerciseItem, setIndex);
+          if (isExtra) {
+            this.removeExtraSet(exerciseItem, setIndex);
+          } else {
+            this.clearSet(button, exerciseItem, setIndex);
+          }
           return;
         }
 
@@ -568,6 +641,156 @@ const App = {
         }
       });
     });
+
+    // Setup + button listeners
+    addSetButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.addExtraSet(button);
+      });
+    });
+  },
+
+  openSetPicker(button) {
+    const target = parseInt(button.dataset.target);
+    const isTimeBased = button.dataset.timeBased === 'true';
+    const maxValue = isTimeBased ? 180 : 50; // 3 minutes or 50 reps
+
+    // Create picker overlay
+    const picker = document.createElement('div');
+    picker.className = 'set-picker-overlay';
+    picker.innerHTML = `
+      <div class="set-picker-backdrop"></div>
+      <div class="set-picker-drawer">
+        <div class="set-picker-header">
+          <h3>Select ${isTimeBased ? 'Duration' : 'Reps'}</h3>
+          <button class="set-picker-close">×</button>
+        </div>
+        <div class="set-picker-scroll">
+          ${this.renderPickerOptions(target, maxValue, isTimeBased)}
+        </div>
+        <button class="set-picker-confirm">Confirm</button>
+      </div>
+    `;
+
+    document.body.appendChild(picker);
+
+    // Scroll to target value
+    setTimeout(() => {
+      const targetOption = picker.querySelector(`.picker-option[data-value="${target}"]`);
+      if (targetOption) {
+        targetOption.scrollIntoView({ block: 'center', behavior: 'smooth' });
+        targetOption.classList.add('selected');
+      }
+    }, 100);
+
+    // Store reference to button
+    picker.dataset.buttonElement = button;
+
+    // Setup picker listeners
+    this.setupPickerListeners(picker, button);
+  },
+
+  renderPickerOptions(startValue, maxValue, isTimeBased) {
+    const options = [];
+    const increment = isTimeBased ? 5 : 1;
+
+    for (let i = increment; i <= maxValue; i += increment) {
+      const label = isTimeBased ? `${i}s` : i;
+      const selectedClass = i === startValue ? 'selected' : '';
+      options.push(`
+        <div class="picker-option ${selectedClass}" data-value="${i}">
+          ${label}
+        </div>
+      `);
+    }
+
+    return options.join('');
+  },
+
+  setupPickerListeners(picker, button) {
+    const backdrop = picker.querySelector('.set-picker-backdrop');
+    const closeBtn = picker.querySelector('.set-picker-close');
+    const confirmBtn = picker.querySelector('.set-picker-confirm');
+    const options = picker.querySelectorAll('.picker-option');
+
+    const closePicker = () => {
+      picker.remove();
+    };
+
+    backdrop.addEventListener('click', closePicker);
+    closeBtn.addEventListener('click', closePicker);
+
+    // Select option on click
+    options.forEach(option => {
+      option.addEventListener('click', () => {
+        options.forEach(opt => opt.classList.remove('selected'));
+        option.classList.add('selected');
+      });
+    });
+
+    confirmBtn.addEventListener('click', () => {
+      const selectedOption = picker.querySelector('.picker-option.selected');
+      if (selectedOption) {
+        const value = parseInt(selectedOption.dataset.value);
+        this.applyPickerValue(button, value);
+      }
+      closePicker();
+    });
+  },
+
+  applyPickerValue(button, value) {
+    const exerciseItem = button.closest('.exercise-item');
+    const setIndex = parseInt(button.dataset.set);
+    const isTimeBased = button.dataset.timeBased === 'true';
+
+    button.classList.add('completed');
+    button.dataset.completed = 'true';
+    button.dataset.actual = value;
+    button.textContent = value + (isTimeBased ? 's' : '');
+
+    this.saveSetData(exerciseItem, setIndex, value, true, isTimeBased);
+  },
+
+  addExtraSet(addButton) {
+    const exerciseItem = addButton.closest('.exercise-item');
+    const exerciseId = exerciseItem.dataset.exerciseId;
+    const target = parseInt(addButton.dataset.target);
+    const isTimeBased = addButton.dataset.timeBased === 'true';
+
+    // Get current log
+    const log = Storage.getLog(this.currentDate) || {};
+    if (!log.exercises) log.exercises = {};
+    if (!log.exercises[exerciseId]) {
+      log.exercises[exerciseId] = { sets: [] };
+    }
+
+    // Add new empty set
+    const newSetIndex = log.exercises[exerciseId].sets.length;
+    log.exercises[exerciseId].sets.push({
+      reps: '',
+      completed: false
+    });
+
+    Storage.saveLog(this.currentDate, log);
+
+    // Re-render the today view to show the new set
+    this.renderView('today');
+  },
+
+  removeExtraSet(exerciseItem, setIndex) {
+    const exerciseId = exerciseItem.dataset.exerciseId;
+    const log = Storage.getLog(this.currentDate) || {};
+
+    if (!log.exercises || !log.exercises[exerciseId]) return;
+
+    // Remove the set from the array
+    log.exercises[exerciseId].sets.splice(setIndex, 1);
+
+    Storage.saveLog(this.currentDate, log);
+
+    // Re-render the today view
+    this.renderView('today');
   },
 
   clearSet(button, exerciseItem, setIndex) {
