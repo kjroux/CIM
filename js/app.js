@@ -1202,18 +1202,12 @@ const App = {
     const isBodyweight = exercise.bodyweight;
     const isTimeBased = typeof exercise.reps === 'string' && (exercise.reps.includes('sec') || exercise.reps.includes('min'));
 
-    let headerInfo = '';
-    if (!isBodyweight && weight) {
-      headerInfo = `<span class="exercise-detail-weight">${weight} lb</span>`;
-    }
-
     return `
       <div class="exercise-detail-page">
         <div class="exercise-detail-header">
           <button class="back-button" id="back-to-workout">← Back</button>
           <div class="exercise-detail-title">
             <h2>${exerciseName}</h2>
-            ${headerInfo}
           </div>
         </div>
 
