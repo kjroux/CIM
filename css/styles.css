@@ -566,6 +566,51 @@ body {
   border-left-color: var(--color-rest);
 }
 
+/* Drag-and-drop styles */
+.week-day[draggable="true"] {
+  cursor: grab;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.week-day.dragging {
+  opacity: 0.5;
+  transform: scale(1.05);
+  cursor: grabbing;
+}
+
+.week-day.drag-over {
+  border-top: 3px solid var(--color-primary);
+  background-color: var(--color-bg);
+}
+
+.drag-handle {
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-light);
+  font-size: 18px;
+  margin-right: 8px;
+  cursor: grab;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.week-day.dragging .drag-handle {
+  cursor: grabbing;
+}
+
+/* Mobile-specific touch target adjustments */
+@media (pointer: coarse) {
+  .drag-handle {
+    min-width: 48px;
+    min-height: 48px;
+  }
+}
+
 .day-left {
   min-width: 80px;
 }
