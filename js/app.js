@@ -1021,9 +1021,22 @@ const App = {
     let workoutsCompleted = 0;
     let workoutsTotal = 0;
 
-    const days = [];
+    // Generate base week dates (Mon-Sun)
+    const baseDates = [];
     for (let i = 0; i < 7; i++) {
-      const dateString = this.addDays(weekStart, i);
+      baseDates.push(this.addDays(weekStart, i));
+    }
+
+    // Load saved permutation and apply if valid
+    const permutation = Storage.getWeekReordering(weekStart);
+    const orderedDates = (permutation && Array.isArray(permutation) && permutation.length === 7)
+      ? permutation.map(i => baseDates[i])
+      : baseDates;
+
+    const days = [];
+    for (let i = 0; i < orderedDates.length; i++) {
+      const dateString = orderedDates[i];
+      const originalIndex = baseDates.indexOf(dateString);
       const workout = this.getScheduledWorkout(dateString);
       const log = Storage.getLog(dateString);
 
@@ -1053,7 +1066,11 @@ const App = {
       const workoutName = workout ? workout.name : 'Rest';
 
       days.push(`
-        <div class="week-day ${typeClass}" data-date="${dateString}">
+        <div class="week-day ${typeClass}"
+             data-date="${dateString}"
+             data-index="${originalIndex}"
+             draggable="true">
+          <div class="drag-handle">☰</div>
           <div class="day-left">
             <div class="day-name">${dayName}</div>
             <div class="day-date">${month} ${day}</div>
