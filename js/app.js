@@ -10,7 +10,7 @@ const App = {
   dragState: {
     isDragging: false,
     draggedElement: null,
-    draggedIndex: null,
+    draggedDayIndex: null,
     touchStartX: null,
     touchStartY: null,
     longPressTimer: null
@@ -1029,23 +1029,30 @@ const App = {
     let workoutsCompleted = 0;
     let workoutsTotal = 0;
 
-    // Generate base week dates (Mon-Sun)
-    const baseDates = [];
-    for (let i = 0; i < 7; i++) {
-      baseDates.push(this.addDays(weekStart, i));
-    }
+    // Get the default workout schedule for this week (Mon=1, Tue=2, etc.)
+    const phase = PROGRAM.phases[info.phase - 1];
+    const weekTemplate = phase.weekTemplate;
 
-    // Load saved permutation and apply if valid
+    // Create array of default workout indices [1,2,3,4,5,6,7]
+    const defaultWorkoutIndices = [1, 2, 3, 4, 5, 6, 7];
+
+    // Load saved permutation - this reorders which WORKOUT appears on which day
     const permutation = Storage.getWeekReordering(weekStart);
-    const orderedDates = (permutation && Array.isArray(permutation) && permutation.length === 7)
-      ? permutation.map(i => baseDates[i])
-      : baseDates;
+    const workoutOrder = (permutation && Array.isArray(permutation) && permutation.length === 7)
+      ? permutation.map(i => defaultWorkoutIndices[i])
+      : defaultWorkoutIndices;
 
     const days = [];
-    for (let i = 0; i < orderedDates.length; i++) {
-      const dateString = orderedDates[i];
-      const originalIndex = baseDates.indexOf(dateString);
-      const workout = this.getScheduledWorkout(dateString);
+    for (let dayIndex = 0; dayIndex < 7; dayIndex++) {
+      // Date is ALWAYS Mon-Sun in order
+      const dateString = this.addDays(weekStart, dayIndex);
+
+      // Workout comes from the reordered workout schedule
+      const workoutDayNumber = workoutOrder[dayIndex];
+      const workoutType = weekTemplate[workoutDayNumber];
+
+      // Get workout details and log for this date
+      const workout = workoutType ? { type: workoutType.type, name: workoutType.name } : null;
       const log = Storage.getLog(dateString);
 
       if (workout && workout.type !== 'rest' && workout.type !== 'optional') {
@@ -1076,9 +1083,9 @@ const App = {
       days.push(`
         <div class="week-day ${typeClass}"
              data-date="${dateString}"
-             data-index="${originalIndex}"
+             data-day-index="${dayIndex}"
+             data-workout-index="${workoutOrder.indexOf(workoutDayNumber)}"
              draggable="true">
-          <div class="drag-handle">☰</div>
           <div class="day-left">
             <div class="day-name">${dayName}</div>
             <div class="day-date">${month} ${day}</div>
@@ -1169,7 +1176,7 @@ const App = {
   handleDragStart(e) {
     this.dragState.isDragging = true;
     this.dragState.draggedElement = e.target.closest('.week-day');
-    this.dragState.draggedIndex = parseInt(this.dragState.draggedElement.dataset.index);
+    this.dragState.draggedDayIndex = parseInt(this.dragState.draggedElement.dataset.dayIndex);
     this.dragState.draggedElement.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
     e.dataTransfer.setData('text/html', this.dragState.draggedElement.innerHTML);
@@ -1187,7 +1194,7 @@ const App = {
       this.dragState.lastDragEnd = Date.now();
       this.dragState.isDragging = false;
       this.dragState.draggedElement = null;
-      this.dragState.draggedIndex = null;
+      this.dragState.draggedDayIndex = null;
     }, 100);
   },
 
@@ -1223,22 +1230,17 @@ const App = {
       return false;
     }
 
-    const dropIndex = parseInt(dropTarget.dataset.index);
-    const draggedIndex = this.dragState.draggedIndex;
+    const dropDayIndex = parseInt(dropTarget.dataset.dayIndex);
+    const draggedDayIndex = this.dragState.draggedDayIndex;
 
     // Calculate new permutation
     const weekStart = this.getWeekStart(this.currentDate);
     const currentPermutation = Storage.getWeekReordering(weekStart) || [0, 1, 2, 3, 4, 5, 6];
     const newPermutation = [...currentPermutation];
 
-    // Swap the dragged index with drop target index
-    const draggedValue = newPermutation.findIndex(v => v === draggedIndex);
-    const dropValue = newPermutation.findIndex(v => v === dropIndex);
-
-    if (draggedValue !== -1 && dropValue !== -1) {
-      [newPermutation[draggedValue], newPermutation[dropValue]] =
-        [newPermutation[dropValue], newPermutation[draggedValue]];
-    }
+    // Swap the workouts at these day positions
+    [newPermutation[draggedDayIndex], newPermutation[dropDayIndex]] =
+      [newPermutation[dropDayIndex], newPermutation[draggedDayIndex]];
 
     // Save and re-render
     Storage.saveWeekReordering(weekStart, newPermutation);
@@ -1256,7 +1258,7 @@ const App = {
     this.dragState.touchStartX = e.touches[0].clientX;
     this.dragState.touchStartY = e.touches[0].clientY;
     this.dragState.draggedElement = target;
-    this.dragState.draggedIndex = parseInt(target.dataset.index);
+    this.dragState.draggedDayIndex = parseInt(target.dataset.dayIndex);
 
     // Start 200ms timer for long-press detection
     this.dragState.longPressTimer = setTimeout(() => {
@@ -1276,7 +1278,7 @@ const App = {
     if (!this.dragState.isDragging && distance > 10) {
       clearTimeout(this.dragState.longPressTimer);
       this.dragState.draggedElement = null;
-      this.dragState.draggedIndex = null;
+      this.dragState.draggedDayIndex = null;
       return;
     }
 
@@ -1310,22 +1312,17 @@ const App = {
       const dropTarget = elementAtPoint?.closest('.week-day');
 
       if (dropTarget && dropTarget !== this.dragState.draggedElement) {
-        const dropIndex = parseInt(dropTarget.dataset.index);
-        const draggedIndex = this.dragState.draggedIndex;
+        const dropDayIndex = parseInt(dropTarget.dataset.dayIndex);
+        const draggedDayIndex = this.dragState.draggedDayIndex;
 
         // Calculate new permutation
         const weekStart = this.getWeekStart(this.currentDate);
         const currentPermutation = Storage.getWeekReordering(weekStart) || [0, 1, 2, 3, 4, 5, 6];
         const newPermutation = [...currentPermutation];
 
-        // Swap the dragged index with drop target index
-        const draggedValue = newPermutation.findIndex(v => v === draggedIndex);
-        const dropValue = newPermutation.findIndex(v => v === dropIndex);
-
-        if (draggedValue !== -1 && dropValue !== -1) {
-          [newPermutation[draggedValue], newPermutation[dropValue]] =
-            [newPermutation[dropValue], newPermutation[draggedValue]];
-        }
+        // Swap the workouts at these day positions
+        [newPermutation[draggedDayIndex], newPermutation[dropDayIndex]] =
+          [newPermutation[dropDayIndex], newPermutation[draggedDayIndex]];
 
         // Save and re-render
         Storage.saveWeekReordering(weekStart, newPermutation);
@@ -1343,7 +1340,7 @@ const App = {
     // Reset drag state
     this.dragState.isDragging = false;
     this.dragState.draggedElement = null;
-    this.dragState.draggedIndex = null;
+    this.dragState.draggedDayIndex = null;
     this.dragState.touchStartX = null;
     this.dragState.touchStartY = null;
   },
