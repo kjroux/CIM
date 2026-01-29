@@ -77,6 +77,7 @@ const WORKOUT_DETAILS = {
         { id: "bench-press", name: "Bench Press", sets: 5, reps: 5 },
         { id: "overhead-press", name: "Overhead Press", sets: 3, reps: 5 },
         { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 10 },
+        { id: "farmer-carry", name: "Farmer Carries", sets: 3, reps: "45sec" },
         { id: "ring-dips", name: "Ring Dips", sets: 3, reps: 5, bodyweight: true },
         { id: "cable-pullthrough", name: "Cable Pull-Through", sets: 2, reps: 12 },
         { id: "plank", name: "Plank", sets: 2, reps: "30sec", bodyweight: true }
@@ -92,6 +93,7 @@ const WORKOUT_DETAILS = {
         { id: "overhead-press", name: "OHP", sets: 3, reps: 5 },
         { id: "pullups", name: "Pull-ups", bodyweight: true, sets: 3, reps: "max" },
         { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 10 },
+        { id: "farmer-carry", name: "Farmer Carries", sets: 3, reps: "45sec" },
         { id: "cable-pullthrough", name: "Cable Pull-Through", sets: 2, reps: 12 }
       ]
     },
@@ -104,7 +106,8 @@ const WORKOUT_DETAILS = {
         { id: "barbell-row", name: "Barbell Row", sets: 3, reps: 5 },
         { id: "overhead-press", name: "OHP", sets: 2, reps: 5 },
         { id: "pullups", name: "Pull-ups", bodyweight: true, sets: 2, reps: "max" },
-        { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 8 }
+        { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 8 },
+        { id: "farmer-carry", name: "Farmer Carries", sets: 3, reps: "45sec" }
       ]
     }
   },
