@@ -28,6 +28,7 @@ const Storage = {
         startDate: DEFAULT_START_DATE,
         logs: {},
         dailyRoutines: {},
+        weekReorderings: {},
         version: CURRENT_VERSION
       };
       this.saveUserData(defaultData);
@@ -78,6 +79,11 @@ const Storage = {
     // Initialize exercise weights storage if not exists
     if (!data.exerciseWeights) {
       data.exerciseWeights = {};
+    }
+
+    // Initialize week reorderings storage if not exists
+    if (!data.weekReorderings) {
+      data.weekReorderings = {};
     }
 
     data.version = CURRENT_VERSION;
@@ -201,5 +207,53 @@ const Storage = {
       }
     });
     return history;
+  },
+
+  // Get week reordering for a specific week (permutation array)
+  getWeekReordering(weekStartDate) {
+    const userData = this.getUserData();
+    if (!userData || !userData.weekReorderings) return null;
+    return userData.weekReorderings[weekStartDate] || null;
+  },
+
+  // Save week reordering (permutation array of indices 0-6)
+  saveWeekReordering(weekStartDate, permutation) {
+    const userData = this.getUserData() || {
+      startDate: DEFAULT_START_DATE,
+      logs: {},
+      dailyRoutines: {},
+      exerciseWeights: {},
+      weekReorderings: {}
+    };
+
+    if (!userData.weekReorderings) {
+      userData.weekReorderings = {};
+    }
+
+    // Validate: must be array of 7 integers
+    if (!Array.isArray(permutation) || permutation.length !== 7) {
+      console.error('Invalid week reordering: must be array of 7 indices');
+      return false;
+    }
+
+    // Validate: must be permutation of [0,1,2,3,4,5,6]
+    const sorted = [...permutation].sort((a, b) => a - b);
+    const isValidPermutation = sorted.every((val, idx) => val === idx);
+    if (!isValidPermutation) {
+      console.error('Invalid week reordering: must be permutation of [0,1,2,3,4,5,6]');
+      return false;
+    }
+
+    userData.weekReorderings[weekStartDate] = permutation;
+    return this.saveUserData(userData);
+  },
+
+  // Reset week to original order (delete reordering)
+  resetWeekReordering(weekStartDate) {
+    const userData = this.getUserData();
+    if (!userData || !userData.weekReorderings) return true;
+
+    delete userData.weekReorderings[weekStartDate];
+    return this.saveUserData(userData);
   }
 };
