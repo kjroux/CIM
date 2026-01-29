@@ -167,10 +167,10 @@ const WORKOUT_DETAILS = {
       name: "Walk/Run + Mobility",
       duration: "50-60 min",
       weeks: {
-        1: { protocol: "Run 2min / Walk 2min x 6", totalTime: 24, runningTime: 12 },
-        2: { protocol: "Run 3min / Walk 2min x 5", totalTime: 25, runningTime: 15 },
-        3: { protocol: "Run 4min / Walk 1min x 6", totalTime: 30, runningTime: 24 },
-        4: { protocol: "Run 5min / Walk 1min x 5", totalTime: 30, runningTime: 25 }
+        1: { protocol: "Run 3min / Walk 2min x 5", totalTime: 25, runningTime: 15 },
+        2: { protocol: "Run 4min / Walk 1min x 6", totalTime: 30, runningTime: 24 },
+        3: { protocol: "Run 5min / Walk 1min x 5", totalTime: 30, runningTime: 25 },
+        4: { protocol: "Run 6min / Walk 1min x 5", totalTime: 35, runningTime: 30 }
       },
       notes: "Treadmill, HR 130-140 bpm, 1% incline, 170-180 spm"
     }
