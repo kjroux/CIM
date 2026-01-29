@@ -77,6 +77,11 @@ body {
   justify-content: space-around;
   align-items: center;
   z-index: 100;
+  /* iOS Safari fixed position fix */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 .nav-item {
