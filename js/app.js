@@ -7,6 +7,14 @@ const App = {
   exerciseDetail: null, // { exerciseId, exerciseName, exercise, tab: 'weight' }
   previousView: null, // For returning from exercise detail
   restTimer: { visible: false, startTime: null, interval: null }, // Phase 3: Rest timer
+  dragState: {
+    isDragging: false,
+    draggedElement: null,
+    draggedIndex: null,
+    touchStartX: null,
+    touchStartY: null,
+    longPressTimer: null
+  },
 
   init() {
     // Initialize storage
@@ -1126,7 +1134,25 @@ const App = {
     if (nextBtn) nextBtn.addEventListener('click', () => this.navigateWeek(1));
 
     document.querySelectorAll('.week-day').forEach(day => {
+      // Mouse drag events (desktop)
+      day.addEventListener('dragstart', (e) => this.handleDragStart(e));
+      day.addEventListener('dragend', (e) => this.handleDragEnd(e));
+      day.addEventListener('dragover', (e) => this.handleDragOver(e));
+      day.addEventListener('dragenter', (e) => this.handleDragEnter(e));
+      day.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+      day.addEventListener('drop', (e) => this.handleDrop(e));
+
+      // Touch events (mobile)
+      day.addEventListener('touchstart', (e) => this.handleTouchStart(e), { passive: false });
+      day.addEventListener('touchmove', (e) => this.handleTouchMove(e), { passive: false });
+      day.addEventListener('touchend', (e) => this.handleTouchEnd(e), { passive: false });
+
+      // Click navigation (check drag state)
       day.addEventListener('click', () => {
+        // Don't navigate if drag just ended (100ms window)
+        if (this.dragState.isDragging || Date.now() - (this.dragState.lastDragEnd || 0) < 100) {
+          return;
+        }
         this.currentDate = day.dataset.date;
         this.renderView('today');
       });
@@ -1136,6 +1162,190 @@ const App = {
   navigateWeek(delta) {
     this.currentDate = this.addDays(this.currentDate, delta * 7);
     this.renderView('week');
+  },
+
+  // DRAG AND DROP HANDLERS (Mouse events for desktop)
+
+  handleDragStart(e) {
+    this.dragState.isDragging = true;
+    this.dragState.draggedElement = e.target.closest('.week-day');
+    this.dragState.draggedIndex = parseInt(this.dragState.draggedElement.dataset.index);
+    this.dragState.draggedElement.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', this.dragState.draggedElement.innerHTML);
+  },
+
+  handleDragEnd(e) {
+    // Remove dragging class after a brief delay to prevent click interference
+    setTimeout(() => {
+      if (this.dragState.draggedElement) {
+        this.dragState.draggedElement.classList.remove('dragging');
+      }
+      document.querySelectorAll('.week-day').forEach(day => {
+        day.classList.remove('drag-over');
+      });
+      this.dragState.lastDragEnd = Date.now();
+      this.dragState.isDragging = false;
+      this.dragState.draggedElement = null;
+      this.dragState.draggedIndex = null;
+    }, 100);
+  },
+
+  handleDragOver(e) {
+    if (e.preventDefault) {
+      e.preventDefault(); // Allow drop
+    }
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+  },
+
+  handleDragEnter(e) {
+    const target = e.target.closest('.week-day');
+    if (target && target !== this.dragState.draggedElement) {
+      target.classList.add('drag-over');
+    }
+  },
+
+  handleDragLeave(e) {
+    const target = e.target.closest('.week-day');
+    if (target) {
+      target.classList.remove('drag-over');
+    }
+  },
+
+  handleDrop(e) {
+    if (e.stopPropagation) {
+      e.stopPropagation(); // Prevent navigation
+    }
+
+    const dropTarget = e.target.closest('.week-day');
+    if (!dropTarget || dropTarget === this.dragState.draggedElement) {
+      return false;
+    }
+
+    const dropIndex = parseInt(dropTarget.dataset.index);
+    const draggedIndex = this.dragState.draggedIndex;
+
+    // Calculate new permutation
+    const weekStart = this.getWeekStart(this.currentDate);
+    const currentPermutation = Storage.getWeekReordering(weekStart) || [0, 1, 2, 3, 4, 5, 6];
+    const newPermutation = [...currentPermutation];
+
+    // Swap the dragged index with drop target index
+    const draggedValue = newPermutation.findIndex(v => v === draggedIndex);
+    const dropValue = newPermutation.findIndex(v => v === dropIndex);
+
+    if (draggedValue !== -1 && dropValue !== -1) {
+      [newPermutation[draggedValue], newPermutation[dropValue]] =
+        [newPermutation[dropValue], newPermutation[draggedValue]];
+    }
+
+    // Save and re-render
+    Storage.saveWeekReordering(weekStart, newPermutation);
+    this.renderView('week');
+
+    return false;
+  },
+
+  // TOUCH EVENT HANDLERS (Mobile drag-and-drop)
+
+  handleTouchStart(e) {
+    const target = e.target.closest('.week-day');
+    if (!target) return;
+
+    this.dragState.touchStartX = e.touches[0].clientX;
+    this.dragState.touchStartY = e.touches[0].clientY;
+    this.dragState.draggedElement = target;
+    this.dragState.draggedIndex = parseInt(target.dataset.index);
+
+    // Start 200ms timer for long-press detection
+    this.dragState.longPressTimer = setTimeout(() => {
+      this.dragState.isDragging = true;
+      this.dragState.draggedElement.classList.add('dragging');
+      // Prevent page scroll during drag
+      e.preventDefault();
+    }, 200);
+  },
+
+  handleTouchMove(e) {
+    const dx = e.touches[0].clientX - this.dragState.touchStartX;
+    const dy = e.touches[0].clientY - this.dragState.touchStartY;
+    const distance = Math.hypot(dx, dy);
+
+    // Cancel drag initiation if user is scrolling (moved >10px before 200ms)
+    if (!this.dragState.isDragging && distance > 10) {
+      clearTimeout(this.dragState.longPressTimer);
+      this.dragState.draggedElement = null;
+      this.dragState.draggedIndex = null;
+      return;
+    }
+
+    // If already dragging, update drop target indicator
+    if (this.dragState.isDragging) {
+      e.preventDefault(); // Prevent scrolling
+      const touch = e.touches[0];
+      const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+      const dropTarget = elementAtPoint?.closest('.week-day');
+
+      // Clear all drag-over states
+      document.querySelectorAll('.week-day').forEach(day => {
+        day.classList.remove('drag-over');
+      });
+
+      // Add drag-over to current drop target
+      if (dropTarget && dropTarget !== this.dragState.draggedElement) {
+        dropTarget.classList.add('drag-over');
+      }
+    }
+  },
+
+  handleTouchEnd(e) {
+    clearTimeout(this.dragState.longPressTimer);
+
+    if (this.dragState.isDragging) {
+      e.preventDefault(); // Prevent click event
+
+      const touch = e.changedTouches[0];
+      const elementAtPoint = document.elementFromPoint(touch.clientX, touch.clientY);
+      const dropTarget = elementAtPoint?.closest('.week-day');
+
+      if (dropTarget && dropTarget !== this.dragState.draggedElement) {
+        const dropIndex = parseInt(dropTarget.dataset.index);
+        const draggedIndex = this.dragState.draggedIndex;
+
+        // Calculate new permutation
+        const weekStart = this.getWeekStart(this.currentDate);
+        const currentPermutation = Storage.getWeekReordering(weekStart) || [0, 1, 2, 3, 4, 5, 6];
+        const newPermutation = [...currentPermutation];
+
+        // Swap the dragged index with drop target index
+        const draggedValue = newPermutation.findIndex(v => v === draggedIndex);
+        const dropValue = newPermutation.findIndex(v => v === dropIndex);
+
+        if (draggedValue !== -1 && dropValue !== -1) {
+          [newPermutation[draggedValue], newPermutation[dropValue]] =
+            [newPermutation[dropValue], newPermutation[draggedValue]];
+        }
+
+        // Save and re-render
+        Storage.saveWeekReordering(weekStart, newPermutation);
+        this.renderView('week');
+      }
+
+      // Cleanup
+      this.dragState.draggedElement.classList.remove('dragging');
+      document.querySelectorAll('.week-day').forEach(day => {
+        day.classList.remove('drag-over');
+      });
+      this.dragState.lastDragEnd = Date.now();
+    }
+
+    // Reset drag state
+    this.dragState.isDragging = false;
+    this.dragState.draggedElement = null;
+    this.dragState.draggedIndex = null;
+    this.dragState.touchStartX = null;
+    this.dragState.touchStartY = null;
   },
 
   // SETTINGS VIEW
