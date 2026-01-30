@@ -1375,6 +1375,24 @@ const App = {
         </div>
 
         <div class="setting-item">
+          <h3>Backup & Restore</h3>
+          <button class="btn btn-primary" id="btn-export-data">Export Backup</button>
+          <p class="setting-note">Download all your data as a JSON file.</p>
+          ${(() => {
+            const lastExport = Storage.getLastExportDate();
+            if (lastExport) {
+              const d = new Date(lastExport);
+              const formatted = d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', hour: 'numeric', minute: '2-digit' });
+              return `<p class="setting-note">Last exported: ${formatted}</p>`;
+            }
+            return '<p class="setting-note">No backups yet.</p>';
+          })()}
+          <button class="btn btn-secondary" id="btn-import-data" style="margin-top: 12px;">Import Backup</button>
+          <input type="file" id="import-file-input" accept=".json,application/json" style="display: none;">
+          <p class="setting-note">Restore from a previously exported backup file. This will replace all current data.</p>
+        </div>
+
+        <div class="setting-item">
           <h3>Data Management</h3>
           <button class="btn btn-danger" id="btn-reset-data">Reset All Data</button>
           <p class="setting-note">This will delete all logged workouts and reset the app.</p>
@@ -1410,6 +1428,63 @@ const App = {
           alert('All data has been reset.');
           this.renderView('settings');
         }
+      });
+    }
+
+    // Export backup
+    const exportBtn = document.getElementById('btn-export-data');
+    if (exportBtn) {
+      exportBtn.addEventListener('click', () => {
+        const jsonString = Storage.exportAllData();
+        if (!jsonString) {
+          alert('No data to export.');
+          return;
+        }
+        const blob = new Blob([jsonString], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        const date = new Date().toISOString().slice(0, 10);
+        a.download = `cim-training-backup-${date}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        // Re-render to show updated export timestamp
+        this.renderView('settings');
+      });
+    }
+
+    // Import backup
+    const importBtn = document.getElementById('btn-import-data');
+    const importInput = document.getElementById('import-file-input');
+    if (importBtn && importInput) {
+      importBtn.addEventListener('click', () => {
+        importInput.click();
+      });
+
+      importInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (!confirm('This will replace ALL current data with the backup. Are you sure?')) {
+          importInput.value = '';
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const result = Storage.importData(event.target.result);
+          alert(result.message);
+          if (result.success) {
+            this.renderView('settings');
+          }
+        };
+        reader.onerror = () => {
+          alert('Failed to read the file.');
+        };
+        reader.readAsText(file);
+        importInput.value = '';
       });
     }
   },

@@ -294,5 +294,63 @@ const Storage = {
     const key = `${exerciseId}:phase${phase}`;
     delete userData.exerciseSetsReps[key];
     return this.saveUserData(userData);
+  },
+
+  // Export all data as JSON string with metadata envelope
+  exportAllData() {
+    const userData = this.getUserData();
+    if (!userData) return null;
+    const envelope = {
+      appName: 'CIM Marathon Training',
+      appVersion: CURRENT_VERSION,
+      exportDate: new Date().toISOString(),
+      data: userData
+    };
+    this.setLastExportDate(envelope.exportDate);
+    return JSON.stringify(envelope, null, 2);
+  },
+
+  // Import data from JSON string, returns { success, message }
+  importData(jsonString) {
+    try {
+      const parsed = JSON.parse(jsonString);
+
+      // Accept either envelope format or raw userData
+      let userData;
+      if (parsed.data && parsed.appName === 'CIM Marathon Training') {
+        userData = parsed.data;
+      } else if (parsed.startDate && parsed.logs !== undefined) {
+        userData = parsed;
+      } else {
+        return { success: false, message: 'Unrecognized file format. Expected a CIM Training backup.' };
+      }
+
+      // Validate required fields
+      if (!userData.startDate || typeof userData.logs !== 'object') {
+        return { success: false, message: 'Backup file is missing required data (startDate or logs).' };
+      }
+
+      // Run through migration to ensure compatibility
+      const storedVersion = userData.version || '1.0';
+      if (storedVersion !== CURRENT_VERSION) {
+        userData = this.migrateData(userData, storedVersion);
+      }
+
+      this.saveUserData(userData);
+      localStorage.setItem(STORAGE_KEYS.APP_VERSION, CURRENT_VERSION);
+      return { success: true, message: 'Data restored successfully.' };
+    } catch (e) {
+      console.error('Import error:', e);
+      return { success: false, message: 'Failed to read backup file. The file may be corrupted.' };
+    }
+  },
+
+  // Get/set last export timestamp
+  getLastExportDate() {
+    return localStorage.getItem('cim_last_export') || null;
+  },
+
+  setLastExportDate(isoString) {
+    localStorage.setItem('cim_last_export', isoString);
   }
 };
