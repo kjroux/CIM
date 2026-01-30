@@ -327,6 +327,17 @@ const App = {
     return '<div class="workout-empty">Workout details not available</div>';
   },
 
+  // Get effective exercise with any custom sets/reps overrides applied
+  getEffectiveExercise(exercise, phase) {
+    const override = Storage.getExerciseSetsReps(exercise.id, phase);
+    if (!override) return exercise;
+    return {
+      ...exercise,
+      sets: override.sets ?? exercise.sets,
+      reps: override.reps ?? exercise.reps
+    };
+  },
+
   renderLiftWorkout(workout, info, log) {
     const liftType = workout.type;
     const phaseKey = `phase${info.phase}`;
@@ -336,7 +347,8 @@ const App = {
       return `<h2>${workout.name}</h2><p>Workout details coming soon</p>`;
     }
 
-    const exercises = workoutDetails.exercises.map(ex => {
+    const exercises = workoutDetails.exercises.map(rawEx => {
+      const ex = this.getEffectiveExercise(rawEx, info.phase);
       const exerciseLog = log?.exercises?.[ex.id] || {};
       const loggedSets = exerciseLog.sets || [];
       const loggedWeight = exerciseLog.weight || Storage.getExerciseWeight(ex.id) || '';
@@ -582,7 +594,7 @@ const App = {
 
         if (exercise) {
           console.log('Found exercise, calling openExerciseDetail');
-          App.openExerciseDetail(exerciseId, exerciseName, exercise);
+          App.openExerciseDetail(exerciseId, exerciseName, exercise, info.phase);
         } else {
           console.error('Exercise not found:', exerciseId);
         }
@@ -1401,12 +1413,13 @@ const App = {
 
   // EXERCISE DETAIL VIEW
 
-  openExerciseDetail(exerciseId, exerciseName, exercise) {
+  openExerciseDetail(exerciseId, exerciseName, exercise, phase) {
     this.previousView = this.currentView;
     this.exerciseDetail = {
       exerciseId,
       exerciseName,
       exercise,
+      phase: phase || 1,
       tab: 'weight'
     };
     this.renderView('exercise-detail');
@@ -1462,8 +1475,11 @@ const App = {
   },
 
   renderWeightTab(exerciseId, exercise) {
+    const phase = this.exerciseDetail?.phase || 1;
+    const effective = this.getEffectiveExercise(exercise, phase);
+    const hasOverride = Storage.getExerciseSetsReps(exerciseId, phase) !== null;
     const isBodyweight = exercise.bodyweight;
-    const isTimeBased = typeof exercise.reps === 'string' && (exercise.reps.includes('sec') || exercise.reps.includes('min'));
+    const isTimeBased = typeof effective.reps === 'string' && (effective.reps.includes('sec') || effective.reps.includes('min'));
     let weight = Storage.getExerciseWeight(exerciseId);
 
     // If no weight stored, use a default based on exercise
@@ -1472,27 +1488,25 @@ const App = {
       Storage.setExerciseWeight(exerciseId, weight);
     }
 
-    const setsReps = `${exercise.sets}×${exercise.reps}`;
+    const setsReps = `${effective.sets}×${effective.reps}`;
+    const overrideClass = hasOverride ? ' has-override' : '';
+    const editorHtml = this.renderSetsRepsEditor(exercise, effective);
 
     if (isBodyweight && !isTimeBased) {
       return `
         <div class="weight-tab bodyweight">
-          <div class="sets-reps-display">${setsReps}</div>
+          <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps} <span class="edit-icon">&#9998;</span></div>
+          <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
           <p>Bodyweight exercise - no weight adjustment needed</p>
         </div>
       `;
     }
 
     if (isTimeBased) {
-      const targetSeconds = parseInt(exercise.reps) || 60;
       return `
         <div class="weight-tab time-based">
-          <div class="sets-duration-display">${exercise.sets}×${exercise.reps}</div>
-          <div class="time-adjuster">
-            <button class="time-btn" data-action="decrease">-5</button>
-            <div class="time-display" id="time-value">${targetSeconds} sec</div>
-            <button class="time-btn" data-action="increase">+5</button>
-          </div>
+          <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps} <span class="edit-icon">&#9998;</span></div>
+          <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
         </div>
       `;
     }
@@ -1502,7 +1516,8 @@ const App = {
 
     return `
       <div class="weight-tab weighted">
-        <div class="sets-reps-display">${setsReps}</div>
+        <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps} <span class="edit-icon">&#9998;</span></div>
+        <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
 
         <div class="plate-visualization">
           ${this.renderPlateBar(plates)}
@@ -1513,6 +1528,57 @@ const App = {
           <div class="weight-display" id="weight-value">${weight} lb</div>
           <button class="weight-btn" data-action="increase">+5</button>
         </div>
+      </div>
+    `;
+  },
+
+  renderSetsRepsEditor(originalExercise, effectiveExercise) {
+    const isTimeBased = typeof effectiveExercise.reps === 'string' && (effectiveExercise.reps.includes('sec') || effectiveExercise.reps.includes('min'));
+    const isMax = effectiveExercise.reps === 'max';
+
+    const setsValue = effectiveExercise.sets;
+
+    let repsRow = '';
+    if (isMax) {
+      repsRow = `
+        <div class="sets-reps-edit-row">
+          <span class="edit-label">Reps</span>
+          <span class="edit-value edit-value-fixed" id="edit-reps-value" data-is-max="true">max</span>
+        </div>
+      `;
+    } else if (isTimeBased) {
+      const timeValue = parseInt(effectiveExercise.reps) || 60;
+      const suffix = effectiveExercise.reps.includes('min') ? 'min' : 'sec';
+      repsRow = `
+        <div class="sets-reps-edit-row">
+          <span class="edit-label">Time</span>
+          <button class="edit-stepper-btn" data-field="reps" data-action="decrease">&minus;</button>
+          <span class="edit-value" id="edit-reps-value" data-time-based="true" data-suffix="${suffix}">${timeValue}</span>
+          <button class="edit-stepper-btn" data-field="reps" data-action="increase">+</button>
+        </div>
+      `;
+    } else {
+      repsRow = `
+        <div class="sets-reps-edit-row">
+          <span class="edit-label">Reps</span>
+          <button class="edit-stepper-btn" data-field="reps" data-action="decrease">&minus;</button>
+          <span class="edit-value" id="edit-reps-value">${effectiveExercise.reps}</span>
+          <button class="edit-stepper-btn" data-field="reps" data-action="increase">+</button>
+        </div>
+      `;
+    }
+
+    return `
+      <div class="sets-reps-edit-row">
+        <span class="edit-label">Sets</span>
+        <button class="edit-stepper-btn" data-field="sets" data-action="decrease">&minus;</button>
+        <span class="edit-value" id="edit-sets-value">${setsValue}</span>
+        <button class="edit-stepper-btn" data-field="sets" data-action="increase">+</button>
+      </div>
+      ${repsRow}
+      <div class="sets-reps-edit-actions">
+        <button class="edit-reset-btn" id="reset-sets-reps">Reset</button>
+        <button class="edit-done-btn" id="done-sets-reps">Done</button>
       </div>
     `;
   },
@@ -1703,9 +1769,11 @@ const App = {
   },
 
   renderHistoryTab(exerciseId, exercise) {
+    const phase = this.exerciseDetail?.phase || 1;
+    const effective = this.getEffectiveExercise(exercise, phase);
     const history = Storage.getExerciseHistory(exerciseId);
     const isBodyweight = exercise.bodyweight;
-    const isTimeBased = typeof exercise.reps === 'string' && (exercise.reps.includes('sec') || exercise.reps.includes('min'));
+    const isTimeBased = typeof effective.reps === 'string' && (effective.reps.includes('sec') || effective.reps.includes('min'));
 
     if (history.length === 0) {
       return '<div class="history-tab"><p>No history yet</p></div>';
@@ -1739,7 +1807,7 @@ const App = {
       tableHeaders = '<th>Date</th><th>Target</th><th>Actual</th>';
       tableRows = history.reverse().map(entry => {
         const date = new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-        const target = `${exercise.sets}×${exercise.reps}`;
+        const target = `${effective.sets}×${effective.reps}`;
         const actual = entry.sets?.map(s => s.seconds || 0).join('/') || '-';
 
         return `
@@ -1851,6 +1919,85 @@ const App = {
         timeDisplay.textContent = `${currentTime} sec`;
       });
     });
+
+    // Sets/Reps editor: tap to open
+    const setsRepsTap = document.getElementById('sets-reps-tap-target');
+    const setsRepsEditor = document.getElementById('sets-reps-editor');
+    if (setsRepsTap && setsRepsEditor) {
+      setsRepsTap.addEventListener('click', () => {
+        setsRepsTap.style.display = 'none';
+        setsRepsEditor.style.display = 'flex';
+      });
+    }
+
+    // Sets/Reps editor: stepper buttons
+    document.querySelectorAll('.edit-stepper-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        const field = e.currentTarget.dataset.field;
+        const action = e.currentTarget.dataset.action;
+        const valueEl = document.getElementById(`edit-${field}-value`);
+        if (!valueEl) return;
+
+        const isTimeBased = valueEl.dataset.timeBased === 'true';
+        let current = parseInt(valueEl.textContent);
+
+        if (field === 'sets') {
+          if (action === 'increase') current = Math.min(10, current + 1);
+          if (action === 'decrease') current = Math.max(1, current - 1);
+        } else {
+          if (isTimeBased) {
+            if (action === 'increase') current = Math.min(120, current + 5);
+            if (action === 'decrease') current = Math.max(15, current - 5);
+          } else {
+            if (action === 'increase') current = Math.min(20, current + 1);
+            if (action === 'decrease') current = Math.max(1, current - 1);
+          }
+        }
+
+        valueEl.textContent = current;
+      });
+    });
+
+    // Sets/Reps editor: Done button
+    const doneBtn = document.getElementById('done-sets-reps');
+    if (doneBtn) {
+      doneBtn.addEventListener('click', () => {
+        const phase = this.exerciseDetail?.phase || 1;
+        const setsVal = parseInt(document.getElementById('edit-sets-value').textContent);
+        const repsEl = document.getElementById('edit-reps-value');
+
+        let repsVal;
+        if (repsEl.dataset.isMax === 'true') {
+          repsVal = 'max';
+        } else if (repsEl.dataset.timeBased === 'true') {
+          const suffix = repsEl.dataset.suffix || 'sec';
+          repsVal = `${repsEl.textContent}${suffix}`;
+        } else {
+          repsVal = parseInt(repsEl.textContent);
+        }
+
+        Storage.setExerciseSetsReps(exerciseId, phase, setsVal, repsVal);
+
+        // Re-render weight tab
+        const content = document.querySelector('.exercise-detail-content');
+        content.innerHTML = this.renderExerciseDetailTab('weight', exerciseId, exercise);
+        this.setupWeightAdjustListeners();
+      });
+    }
+
+    // Sets/Reps editor: Reset button
+    const resetBtn = document.getElementById('reset-sets-reps');
+    if (resetBtn) {
+      resetBtn.addEventListener('click', () => {
+        const phase = this.exerciseDetail?.phase || 1;
+        Storage.clearExerciseSetsReps(exerciseId, phase);
+
+        // Re-render weight tab
+        const content = document.querySelector('.exercise-detail-content');
+        content.innerHTML = this.renderExerciseDetailTab('weight', exerciseId, exercise);
+        this.setupWeightAdjustListeners();
+      });
+    }
   },
 
   // PHASE 3: REST TIMER

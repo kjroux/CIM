@@ -6,7 +6,7 @@ const STORAGE_KEYS = {
   APP_VERSION: 'cim_app_version'
 };
 
-const CURRENT_VERSION = '1.2'; // Increment this when making breaking changes
+const CURRENT_VERSION = '1.3'; // Increment this when making breaking changes
 const DEFAULT_START_DATE = '2026-02-02'; // Monday of week 1 (Feb 2, 2026)
 
 const Storage = {
@@ -29,6 +29,7 @@ const Storage = {
         logs: {},
         dailyRoutines: {},
         weekReorderings: {},
+        exerciseSetsReps: {},
         version: CURRENT_VERSION
       };
       this.saveUserData(defaultData);
@@ -84,6 +85,11 @@ const Storage = {
     // Initialize week reorderings storage if not exists
     if (!data.weekReorderings) {
       data.weekReorderings = {};
+    }
+
+    // Initialize exercise sets/reps overrides if not exists
+    if (!data.exerciseSetsReps) {
+      data.exerciseSetsReps = {};
     }
 
     data.version = CURRENT_VERSION;
@@ -254,6 +260,39 @@ const Storage = {
     if (!userData || !userData.weekReorderings) return true;
 
     delete userData.weekReorderings[weekStartDate];
+    return this.saveUserData(userData);
+  },
+
+  // Get custom sets/reps override for an exercise in a specific phase
+  getExerciseSetsReps(exerciseId, phase) {
+    const userData = this.getUserData();
+    if (!userData || !userData.exerciseSetsReps) return null;
+    const key = `${exerciseId}:phase${phase}`;
+    return userData.exerciseSetsReps[key] || null;
+  },
+
+  // Set custom sets/reps for an exercise in a specific phase
+  setExerciseSetsReps(exerciseId, phase, sets, reps) {
+    const userData = this.getUserData() || {
+      startDate: DEFAULT_START_DATE,
+      logs: {},
+      dailyRoutines: {},
+      exerciseWeights: {},
+      weekReorderings: {},
+      exerciseSetsReps: {}
+    };
+    if (!userData.exerciseSetsReps) userData.exerciseSetsReps = {};
+    const key = `${exerciseId}:phase${phase}`;
+    userData.exerciseSetsReps[key] = { sets, reps };
+    return this.saveUserData(userData);
+  },
+
+  // Clear custom sets/reps override (reset to program default)
+  clearExerciseSetsReps(exerciseId, phase) {
+    const userData = this.getUserData();
+    if (!userData || !userData.exerciseSetsReps) return true;
+    const key = `${exerciseId}:phase${phase}`;
+    delete userData.exerciseSetsReps[key];
     return this.saveUserData(userData);
   }
 };

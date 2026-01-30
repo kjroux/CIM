@@ -807,6 +807,134 @@ body {
   font-size: 18px;
   font-weight: 600;
   color: var(--color-text-light);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.sets-reps-display:active,
+.sets-duration-display:active {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.sets-reps-display .edit-icon {
+  font-size: 14px;
+  opacity: 0.35;
+}
+
+.sets-reps-display.has-override {
+  color: #4285F4;
+}
+
+.sets-reps-display.has-override .edit-icon {
+  opacity: 0.6;
+}
+
+/* Sets/Reps inline editor */
+.sets-reps-editor {
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 0;
+  width: 100%;
+  max-width: 280px;
+}
+
+.sets-reps-edit-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+
+.edit-label {
+  width: 40px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--color-text-light);
+  text-align: right;
+}
+
+.edit-stepper-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 2px solid #E0E0E0;
+  background: #fff;
+  font-size: 20px;
+  font-weight: 600;
+  color: #333;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+}
+
+.edit-stepper-btn:active {
+  background: #F0F0F0;
+  border-color: #CCC;
+}
+
+.edit-value {
+  font-size: 28px;
+  font-weight: 700;
+  min-width: 48px;
+  text-align: center;
+  color: #333;
+}
+
+.edit-value-fixed {
+  color: var(--color-text-light);
+  font-style: italic;
+}
+
+.sets-reps-edit-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.edit-reset-btn {
+  padding: 10px 20px;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  color: var(--color-text-light);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  min-height: 44px;
+}
+
+.edit-reset-btn:active {
+  background: #F0F0F0;
+}
+
+.edit-done-btn {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 8px;
+  background: #4285F4;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-appearance: none;
+  min-height: 44px;
+}
+
+.edit-done-btn:active {
+  background: #3367D6;
 }
 
 .plate-visualization {
