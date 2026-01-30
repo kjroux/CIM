@@ -1469,3 +1469,131 @@ body {
 .rest-timer-dismiss:active {
   background: rgba(255, 255, 255, 0.2);
 }
+
+/* ========== Library View ========== */
+
+.library-view {
+  padding-bottom: calc(var(--nav-height) + 20px);
+}
+
+.library-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 8px;
+}
+
+.library-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.library-phase-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-primary);
+  background: rgba(66, 133, 244, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.library-category {
+  margin-bottom: 8px;
+}
+
+.library-category-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 12px 16px 6px;
+}
+
+.library-cards {
+  display: flex;
+  flex-direction: column;
+}
+
+.library-card {
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.library-card:active {
+  background: var(--color-border);
+}
+
+.library-card-inactive {
+  opacity: 0.5;
+}
+
+.library-card-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.library-card-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.library-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.library-card-setsreps {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+.library-card-weight {
+  font-size: 13px;
+  color: var(--color-text-light);
+}
+
+.library-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 4px;
+}
+
+.library-card-phases {
+  display: flex;
+  gap: 4px;
+}
+
+.library-phase-pip {
+  font-size: 11px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: var(--color-border);
+  color: var(--color-text-light);
+}
+
+.library-phase-pip.current {
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+}
+
+.library-card-sessions {
+  font-size: 12px;
+  color: var(--color-text-light);
+}

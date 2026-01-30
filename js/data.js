@@ -209,6 +209,82 @@ const WORKOUT_DETAILS = {
   }
 };
 
+const EXERCISE_CATEGORIES = {
+  'Compound': ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row', 'front-squat'],
+  'Accessory': ['hip-thrust', 'romanian-deadlift', 'bulgarian-split-squat', 'cable-pullthrough', 'ring-dips', 'pullups', 'slow-tempo-squat', 'slow-tempo-front-squat', 'farmer-carry'],
+  'Mobility & Stability': ['step-downs', 'step-ups', 'monster-walks', 'single-leg-calf'],
+  'Core': ['plank', 'side-plank', 'core-circuit']
+};
+
+// Build a lookup: exerciseId → category
+const _exerciseCategoryMap = {};
+Object.entries(EXERCISE_CATEGORIES).forEach(([cat, ids]) => {
+  ids.forEach(id => { _exerciseCategoryMap[id] = cat; });
+});
+
+// Get all unique exercises across all lift types and phases, grouped by category
+function getAllExercises() {
+  const seen = {};
+  const exercises = [];
+
+  const liftTypes = ['lift-a', 'lift-b', 'lift-c'];
+  for (const liftType of liftTypes) {
+    const liftData = WORKOUT_DETAILS[liftType];
+    if (!liftData) continue;
+    for (const phaseKey of Object.keys(liftData)) {
+      const phase = liftData[phaseKey];
+      if (!phase.exercises) continue;
+      for (const ex of phase.exercises) {
+        if (!seen[ex.id]) {
+          seen[ex.id] = true;
+          // Find which phases this exercise appears in
+          const phases = [];
+          for (const lt of liftTypes) {
+            const ltd = WORKOUT_DETAILS[lt];
+            if (!ltd) continue;
+            for (const pk of Object.keys(ltd)) {
+              if (ltd[pk].exercises?.some(e => e.id === ex.id)) {
+                const phaseNum = parseInt(pk.replace('phase', ''));
+                if (!phases.includes(phaseNum)) phases.push(phaseNum);
+              }
+            }
+          }
+          exercises.push({
+            ...ex,
+            phases: phases.sort(),
+            category: _exerciseCategoryMap[ex.id] || 'Other'
+          });
+        }
+      }
+    }
+  }
+
+  return exercises;
+}
+
+// Get exercises grouped by category, sorted
+function getExercisesByCategory() {
+  const exercises = getAllExercises();
+  const grouped = {};
+  const categoryOrder = Object.keys(EXERCISE_CATEGORIES);
+
+  for (const cat of categoryOrder) {
+    grouped[cat] = [];
+  }
+
+  for (const ex of exercises) {
+    if (!grouped[ex.category]) grouped[ex.category] = [];
+    grouped[ex.category].push(ex);
+  }
+
+  // Remove empty categories
+  for (const cat of Object.keys(grouped)) {
+    if (grouped[cat].length === 0) delete grouped[cat];
+  }
+
+  return grouped;
+}
+
 const DAILY_ROUTINES = {
   morning: {
     short: {

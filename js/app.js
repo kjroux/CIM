@@ -109,6 +109,10 @@ const App = {
         contentArea.innerHTML = this.renderSettingsView();
         this.setupSettingsViewListeners();
         break;
+      case 'library':
+        contentArea.innerHTML = this.renderLibraryView();
+        this.setupLibraryListeners();
+        break;
       case 'exercise-detail':
         contentArea.innerHTML = this.renderExerciseDetailView();
         this.setupExerciseDetailListeners();
@@ -2182,6 +2186,127 @@ const App = {
         timeDisplay.textContent = timeString;
       }
     }
+  },
+
+  // ========== Library View ==========
+
+  renderLibraryView() {
+    const info = this.getProgramInfo(this.currentDate);
+    const currentPhase = (info.status === 'active') ? info.phase : 1;
+    const grouped = getExercisesByCategory();
+
+    let html = `
+      <div class="library-view">
+        <div class="library-header">
+          <h1>Exercise Library</h1>
+          <div class="library-phase-badge">Phase ${currentPhase}</div>
+        </div>`;
+
+    for (const [category, exercises] of Object.entries(grouped)) {
+      html += `
+        <div class="library-category">
+          <h2 class="library-category-title">${category}</h2>
+          <div class="library-cards">`;
+
+      for (const ex of exercises) {
+        const effective = this.getEffectiveExercise(ex, currentPhase);
+        const weight = Storage.getExerciseWeight(ex.id);
+        const history = Storage.getExerciseHistory(ex.id);
+        const sessionCount = history.length;
+
+        // Format sets x reps
+        let setsReps = '';
+        if (effective.sets && effective.reps) {
+          setsReps = `${effective.sets}×${effective.reps}`;
+        }
+
+        // Format weight display
+        let weightDisplay = '';
+        if (weight && !ex.bodyweight) {
+          weightDisplay = `${weight} lbs`;
+        } else if (ex.bodyweight) {
+          weightDisplay = 'Bodyweight';
+        }
+
+        // Phase badges
+        const phaseBadges = ex.phases.map(p =>
+          `<span class="library-phase-pip${p === currentPhase ? ' current' : ''}">${p}</span>`
+        ).join('');
+
+        // Check if this exercise exists in the current phase
+        const inCurrentPhase = ex.phases.includes(currentPhase);
+
+        html += `
+          <div class="library-card${inCurrentPhase ? '' : ' library-card-inactive'}" data-exercise-id="${ex.id}">
+            <div class="library-card-main">
+              <div class="library-card-name">${ex.name}</div>
+              <div class="library-card-meta">
+                ${setsReps ? `<span class="library-card-setsreps">${setsReps}</span>` : ''}
+                ${weightDisplay ? `<span class="library-card-weight">${weightDisplay}</span>` : ''}
+              </div>
+            </div>
+            <div class="library-card-footer">
+              <div class="library-card-phases">${phaseBadges}</div>
+              ${sessionCount > 0 ? `<div class="library-card-sessions">${sessionCount} session${sessionCount !== 1 ? 's' : ''}</div>` : ''}
+            </div>
+          </div>`;
+      }
+
+      html += `
+          </div>
+        </div>`;
+    }
+
+    html += '</div>';
+    return html;
+  },
+
+  setupLibraryListeners() {
+    const info = this.getProgramInfo(this.currentDate);
+    const currentPhase = (info.status === 'active') ? info.phase : 1;
+    const phaseKey = `phase${currentPhase}`;
+
+    document.querySelectorAll('.library-card').forEach(card => {
+      card.addEventListener('click', () => {
+        const exerciseId = card.dataset.exerciseId;
+
+        // Find the exercise object from workout details
+        const liftTypes = ['lift-a', 'lift-b', 'lift-c'];
+        let foundExercise = null;
+
+        // First try current phase, then any phase
+        for (const lt of liftTypes) {
+          const phaseData = WORKOUT_DETAILS[lt]?.[phaseKey];
+          if (phaseData?.exercises) {
+            const match = phaseData.exercises.find(e => e.id === exerciseId);
+            if (match) {
+              foundExercise = match;
+              break;
+            }
+          }
+        }
+
+        // Fallback: search all phases
+        if (!foundExercise) {
+          for (const lt of liftTypes) {
+            const ltd = WORKOUT_DETAILS[lt];
+            if (!ltd) continue;
+            for (const pk of Object.keys(ltd)) {
+              const match = ltd[pk].exercises?.find(e => e.id === exerciseId);
+              if (match) {
+                foundExercise = match;
+                break;
+              }
+            }
+            if (foundExercise) break;
+          }
+        }
+
+        if (foundExercise) {
+          this.openExerciseDetail(exerciseId, foundExercise.name, foundExercise, currentPhase);
+        }
+      });
+    });
   }
 };
 
