@@ -1,5 +1,7 @@
 <svg width="512" height="512" xmlns="http://www.w3.org/2000/svg">
-  <rect width="512" height="512" fill="#2563EB"/>
-  <text x="256" y="220" font-family="Helvetica, Arial, sans-serif" font-size="179" font-weight="bold" fill="white" text-anchor="middle">CIM</text>
-  <text x="256" y="314" font-family="Helvetica, Arial, sans-serif" font-size="61" fill="white" text-anchor="middle">Training</text>
+  <rect width="512" height="512" fill="#FFFFFF"/>
+  <rect y="451" width="512" height="61" fill="#B31921"/>
+  <line x1="51" y1="445" x2="461" y2="445" stroke="#B31921" stroke-width="2"/>
+  <text x="256" y="240" font-family="Helvetica, Arial, sans-serif" font-size="194" font-weight="bold" fill="#B31921" text-anchor="middle">CIM</text>
+  <polygon points="256,290 260,302 273,302 263,310 266,322 256,314 246,322 249,310 239,302 252,302" fill="#B31921"/>
 </svg>
