@@ -1616,18 +1616,24 @@ const App = {
       return '<div class="plate-bar"><div class="bar-only">45 lb bar</div></div>';
     }
 
-    const plateHTML = plates.map(plate => {
+    const makePlateHTML = (platesArr) => platesArr.map(plate => {
       const style = plate.border
         ? `background: ${plate.color}; border: 2px solid #333;`
         : `background: ${plate.color};`;
       return `<div class="plate" style="${style}">${plate.name}</div>`;
     }).join('');
 
+    // Left side: reverse so heaviest is closest to bar (center)
+    const leftPlates = [...plates].reverse();
+    const leftHTML = makePlateHTML(leftPlates);
+    // Right side: heaviest first (closest to bar) — already in order
+    const rightHTML = makePlateHTML(plates);
+
     return `
       <div class="plate-bar">
-        <div class="plates-left">${plateHTML}</div>
-        <div class="bar">45</div>
-        <div class="plates-right">${plateHTML}</div>
+        <div class="plates-left">${leftHTML}</div>
+        <div class="barbell-bar">45</div>
+        <div class="plates-right">${rightHTML}</div>
       </div>
     `;
   },

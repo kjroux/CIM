@@ -970,9 +970,9 @@ body {
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.bar {
+.barbell-bar {
   height: 20px;
-  background: #666;
+  background: #9E9E9E;
   color: #fff;
   padding: 0 40px;
   display: flex;
@@ -986,7 +986,7 @@ body {
 
 .bar-only {
   padding: 20px 40px;
-  background: #666;
+  background: #9E9E9E;
   color: #fff;
   border-radius: 4px;
   font-weight: 600;
