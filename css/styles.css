@@ -119,6 +119,9 @@ body {
   padding: 20px;
   color: white;
   text-align: center;
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .today-header.workout-lift {
@@ -1243,8 +1246,8 @@ body {
 .clickable-exercise {
   cursor: pointer;
   transition: background 0.2s;
-  padding: 12px;
-  margin-bottom: 12px;
+  padding: 8px 0;
+  margin-bottom: 4px;
   border-radius: 8px;
 }
 
