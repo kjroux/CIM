@@ -469,11 +469,14 @@ const App = {
 
     const hasStrides = workout.type === 'easy-run-strides';
     const workoutDetails = WORKOUT_DETAILS[workout.type];
+    const notes = typeof workoutDetails.notes === 'object'
+      ? (workoutDetails.notes[`phase${info.phase}`] || workoutDetails.notes.default)
+      : workoutDetails.notes;
 
     return `
       <h2>${workout.name}</h2>
       ${targetMiles > 0 ? `<p class="target-miles">Target: ${targetMiles} miles</p>` : ''}
-      <p class="workout-notes">${workoutDetails.notes}</p>
+      <p class="workout-notes">${notes}</p>
       ${this.renderRunInputs(log)}
       ${hasStrides ? this.renderStridesInput(log) : ''}
     `;

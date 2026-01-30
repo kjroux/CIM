@@ -175,20 +175,29 @@ const WORKOUT_DETAILS = {
         3: { protocol: "Run 5min / Walk 1min x 5", totalTime: 30, runningTime: 25 },
         4: { protocol: "Run 6min / Walk 1min x 5", totalTime: 35, runningTime: 30 }
       },
-      notes: "Treadmill, HR 130-140 bpm, 1% incline, 170-180 spm"
+      notes: "Treadmill, HR 139-145 bpm, 1% incline, 170-180 spm"
     }
   },
   "easy-run": {
     name: "Easy Run",
-    notes: "HR below 145, target 130-140 bpm. Let HR dictate pace (probably 8:30-9:30/mile). 170-180 spm cadence."
+    notes: {
+      default: "HR 139-145 bpm. Let HR dictate pace (probably 8:30-9:30/mile). 170-180 spm cadence.",
+      phase3: "HR 145-151 bpm. Let HR dictate pace. 170-180 spm cadence."
+    }
   },
   "easy-run-strides": {
     name: "Easy Run + Strides",
-    notes: "HR below 145 for run. Then 6-8 x 15sec strides at fast but controlled pace, 45-60sec recovery between."
+    notes: {
+      default: "HR 139-145 bpm for run. Then 6-8 x 15sec strides at fast but controlled pace, 45-60sec recovery between.",
+      phase3: "HR 145-151 bpm for run. Then 6-8 x 15sec strides at fast but controlled pace, 45-60sec recovery between."
+    }
   },
   "long-run": {
     name: "Long Run",
-    notes: "HR below 145, target 130-140 bpm. Same pace guidelines as easy run."
+    notes: {
+      default: "HR 139-145 bpm. Same pace guidelines as easy run.",
+      phase3: "HR 145-151 bpm. Same pace guidelines as easy run."
+    }
   },
   "rest": {
     name: "Rest Day",
