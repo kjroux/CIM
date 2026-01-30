@@ -287,6 +287,12 @@ body {
   -webkit-overflow-scrolling: touch;
   margin-top: 8px;
   padding-bottom: 4px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.set-buttons::-webkit-scrollbar {
+  display: none;
 }
 
 .set-button {
