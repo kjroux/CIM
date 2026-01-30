@@ -16,9 +16,9 @@ const App = {
     longPressTimer: null
   },
 
-  init() {
-    // Initialize storage
-    Storage.initUserData();
+  async init() {
+    // Initialize storage (async: loads from IDB, falls back to localStorage)
+    await Storage.initStorage();
 
     // Set current date
     this.currentDate = this.getTodayDateString();

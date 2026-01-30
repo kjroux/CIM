@@ -11,6 +11,72 @@ const DEFAULT_START_DATE = '2026-02-02'; // Monday of week 1 (Feb 2, 2026)
 
 const Storage = {
 
+  // In-memory cache — all sync reads go through this
+  _cache: null,
+
+  // Async initialization: load from IDB (preferred) or localStorage (fallback)
+  async initStorage() {
+    // Initialize IndexedDB
+    const idbReady = await IDBStorage.init();
+
+    if (idbReady) {
+      // Try loading from IDB first
+      const idbData = await IDBStorage.getData();
+      if (idbData) {
+        console.log('[Storage] Loaded data from IndexedDB');
+        this._cache = idbData;
+        // Sync localStorage as backup
+        this._saveToLocalStorage(idbData);
+      } else {
+        // IDB empty — try localStorage (first run after migration, or fresh)
+        const lsData = this._loadFromLocalStorage();
+        if (lsData) {
+          console.log('[Storage] Migrating data from localStorage to IndexedDB');
+          this._cache = lsData;
+          // Seed IDB with localStorage data
+          IDBStorage.saveData(lsData);
+        }
+      }
+    } else {
+      // IDB unavailable — fall back to localStorage only
+      console.log('[Storage] IndexedDB unavailable, using localStorage only');
+      this._cache = this._loadFromLocalStorage();
+    }
+
+    // Now run the normal init/migration logic
+    return this.initUserData();
+  },
+
+  // Read raw data from localStorage
+  _loadFromLocalStorage() {
+    try {
+      const data = localStorage.getItem(STORAGE_KEYS.USER_DATA);
+      return data ? JSON.parse(data) : null;
+    } catch (e) {
+      console.error('[Storage] Error reading localStorage:', e);
+      return null;
+    }
+  },
+
+  // Write to localStorage only (sync)
+  _saveToLocalStorage(data) {
+    try {
+      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data));
+    } catch (e) {
+      console.error('[Storage] Error writing localStorage:', e);
+    }
+  },
+
+  // Persist to both localStorage and IDB (IDB is fire-and-forget)
+  _persist(data) {
+    this._saveToLocalStorage(data);
+    if (IDBStorage.isSupported()) {
+      IDBStorage.saveData(data).catch(e => {
+        console.warn('[Storage] IDB persist failed:', e);
+      });
+    }
+  },
+
   // Initialize default user data structure
   initUserData() {
     let existingData = this.getUserData();
@@ -96,8 +162,10 @@ const Storage = {
     return data;
   },
 
-  // Get all user data
+  // Get all user data (from cache, or fallback to localStorage)
   getUserData() {
+    if (this._cache) return this._cache;
+    // Fallback: cache not yet populated (called before initStorage)
     try {
       const data = localStorage.getItem(STORAGE_KEYS.USER_DATA);
       return data ? JSON.parse(data) : null;
@@ -107,10 +175,11 @@ const Storage = {
     }
   },
 
-  // Save all user data
+  // Save all user data (cache + dual persist)
   saveUserData(data) {
+    this._cache = data;
     try {
-      localStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(data));
+      this._persist(data);
       return true;
     } catch (e) {
       console.error('Error saving user data:', e);
@@ -167,8 +236,14 @@ const Storage = {
 
   // Clear all data
   clearAllData() {
+    this._cache = null;
     try {
       localStorage.removeItem(STORAGE_KEYS.USER_DATA);
+      if (IDBStorage.isSupported()) {
+        IDBStorage.deleteData().catch(e => {
+          console.warn('[Storage] IDB clear failed:', e);
+        });
+      }
       return true;
     } catch (e) {
       console.error('Error clearing data:', e);
