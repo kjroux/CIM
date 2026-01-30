@@ -1064,6 +1064,90 @@ body {
   font-weight: 600;
 }
 
+/* Vertical grouped bar chart for bodyweight/time exercises */
+.vbar-chart-wrapper {
+  display: flex;
+  gap: 4px;
+  align-items: stretch;
+  height: 220px;
+  margin-top: 8px;
+}
+
+.vbar-y-axis {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 28px;
+  min-width: 32px;
+  text-align: right;
+}
+
+.vbar-y-label {
+  font-size: 11px;
+  color: var(--color-text-light);
+  line-height: 1;
+}
+
+.vbar-chart-scroll {
+  flex: 1;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-left: 1px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.vbar-chart {
+  display: flex;
+  gap: 12px;
+  align-items: flex-end;
+  height: 100%;
+  padding: 0 8px;
+  min-width: min-content;
+}
+
+.vbar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.vbar-bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  flex: 1;
+  height: 100%;
+}
+
+.vbar {
+  width: 16px;
+  min-height: 2px;
+  border-radius: 3px 3px 0 0;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.vbar-label {
+  position: absolute;
+  top: -16px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 10px;
+  font-weight: 600;
+  color: var(--color-text-light);
+  white-space: nowrap;
+}
+
+.vbar-date {
+  font-size: 10px;
+  color: var(--color-text-light);
+  margin-top: 4px;
+  white-space: nowrap;
+  text-align: center;
+}
+
+/* Legacy horizontal bar chart (kept for other uses) */
 .bar-chart {
   display: flex;
   flex-direction: column;
@@ -1091,18 +1175,6 @@ body {
   display: flex;
   gap: 8px;
   flex: 1;
-}
-
-.bar {
-  background: var(--color-primary);
-  color: #fff;
-  padding: 8px 12px;
-  border-radius: 4px;
-  font-size: 14px;
-  font-weight: 600;
-  min-width: 40px;
-  text-align: center;
-  transition: width 0.3s;
 }
 
 .bar-empty {

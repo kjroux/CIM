@@ -1747,29 +1747,58 @@ const App = {
     const recentHistory = history.slice(-12);
     if (recentHistory.length === 0) return '<p>No data</p>';
 
+    // Color palette for each workout session
+    const colors = [
+      '#4285F4', '#EA4335', '#FBBC04', '#0F9D58',
+      '#AB47BC', '#FF7043', '#26A69A', '#5C6BC0',
+      '#EF5350', '#66BB6A', '#FFA726', '#42A5F5'
+    ];
+
     const maxValue = Math.max(...recentHistory.flatMap(h =>
       h.sets?.map(s => s.reps || s.seconds || 0) || [0]
     ));
 
-    return `
-      <div class="bar-chart">
-        ${recentHistory.reverse().map((entry, i) => {
-          const date = new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-          const bgColor = i % 2 === 0 ? '#f5f5f5' : '#fff';
+    // Y-axis labels (5 ticks)
+    const yTicks = [];
+    const step = Math.ceil(maxValue / 4);
+    for (let i = 0; i <= 4; i++) {
+      yTicks.push(i * step);
+    }
+    const yMax = yTicks[yTicks.length - 1] || 1;
 
-          return `
-            <div class="bar-row" style="background: ${bgColor}">
-              <div class="bar-date">${date}</div>
-              <div class="bar-sets">
-                ${entry.sets?.map(set => {
-                  const value = set.reps || set.seconds || 0;
-                  const width = (value / maxValue) * 100;
-                  return `<div class="bar" style="width: ${width}%">${value}</div>`;
-                }).join('') || '<div class="bar-empty">-</div>'}
-              </div>
-            </div>
-          `;
-        }).join('')}
+    const groupsHTML = recentHistory.map((entry, i) => {
+      const date = new Date(entry.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+      const color = colors[i % colors.length];
+      const sets = entry.sets || [];
+
+      const barsHTML = sets.map(set => {
+        const value = set.reps || set.seconds || 0;
+        const heightPct = (value / yMax) * 100;
+        return `<div class="vbar" style="height: ${heightPct}%; background: ${color};">
+          <span class="vbar-label">${value}</span>
+        </div>`;
+      }).join('');
+
+      return `
+        <div class="vbar-group">
+          <div class="vbar-bars">${barsHTML}</div>
+          <div class="vbar-date">${date}</div>
+        </div>
+      `;
+    }).join('');
+
+    const yLabelsHTML = yTicks.reverse().map(v =>
+      `<div class="vbar-y-label">${v}</div>`
+    ).join('');
+
+    return `
+      <div class="vbar-chart-wrapper">
+        <div class="vbar-y-axis">${yLabelsHTML}</div>
+        <div class="vbar-chart-scroll">
+          <div class="vbar-chart">
+            ${groupsHTML}
+          </div>
+        </div>
       </div>
     `;
   },
