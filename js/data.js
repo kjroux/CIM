@@ -175,7 +175,7 @@ const WORKOUT_DETAILS = {
         3: { protocol: "Run 5min / Walk 1min x 5", totalTime: 30, runningTime: 25 },
         4: { protocol: "Run 6min / Walk 1min x 5", totalTime: 35, runningTime: 30 }
       },
-      notes: "Treadmill, HR 139-145 bpm, 1% incline, 170-180 spm"
+      notes: "HR 139-145 bpm, 1% incline, 170-180 spm"
     }
   },
   "easy-run": {

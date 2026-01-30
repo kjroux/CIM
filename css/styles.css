@@ -199,13 +199,14 @@ body {
   margin: 12px 0;
 }
 
-.workout-notes {
-  background-color: #F0F7FF;
-  padding: 12px;
-  border-radius: 8px;
-  font-size: 14px;
-  margin: 12px 0;
-  color: var(--color-text);
+.run-notes {
+  background-color: var(--color-border);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin: 8px 0;
+  color: var(--color-text-light);
+  line-height: 1.4;
 }
 
 .workout-empty {
@@ -330,59 +331,63 @@ body {
 /* Run Inputs */
 .run-protocol {
   background-color: var(--color-bg);
-  padding: 16px;
+  padding: 12px;
   border-radius: 8px;
-  margin: 16px 0;
+  margin: 8px 0;
 }
 
 .run-protocol h3 {
-  font-size: 16px;
-  margin-bottom: 8px;
+  font-size: 14px;
+  margin-bottom: 4px;
+  color: var(--color-text-light);
 }
 
 .protocol-text {
   font-weight: 600;
-  margin-bottom: 4px;
+  font-size: 15px;
+  margin-bottom: 2px;
 }
 
 .protocol-detail {
-  font-size: 14px;
+  font-size: 13px;
   color: var(--color-text-light);
 }
 
 .target-miles {
   background-color: #E8F5E9;
-  padding: 8px 12px;
+  padding: 6px 12px;
   border-radius: 6px;
   font-weight: 600;
   color: #2E7D32;
-  margin: 12px 0;
+  font-size: 14px;
+  margin: 8px 0;
 }
 
 .run-inputs {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin: 16px 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin: 12px 0;
 }
 
 .input-group {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
 }
 
 .input-group label {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--color-text-light);
 }
 
 .input-group input {
-  padding: 10px;
+  padding: 8px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
-  font-size: 16px;
+  font-size: 15px;
+  width: 100%;
 }
 
 .strides-input {

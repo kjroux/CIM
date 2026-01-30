@@ -420,6 +420,16 @@ const Storage = {
     }
   },
 
+  // Parse duration string (mm:ss or raw minutes) to total minutes
+  parseDurationToMinutes(val) {
+    if (!val) return 0;
+    if (typeof val === 'string' && val.includes(':')) {
+      const parts = val.split(':');
+      return (parseInt(parts[0]) || 0) + (parseInt(parts[1]) || 0) / 60;
+    }
+    return parseFloat(val) || 0;
+  },
+
   // Get all run data from logs, sorted by date
   getAllRunData() {
     const userData = this.getUserData();
@@ -430,7 +440,7 @@ const Storage = {
       const log = userData.logs[date];
       if (log.run && (log.run.distance || log.run.duration)) {
         const distance = parseFloat(log.run.distance) || 0;
-        const duration = parseFloat(log.run.duration) || 0;
+        const duration = this.parseDurationToMinutes(log.run.duration);
         const avgHR = parseFloat(log.run.avgHR) || 0;
         const pace = distance > 0 && duration > 0 ? duration / distance : 0;
         const efficiency = avgHR > 0 && duration > 0 && distance > 0

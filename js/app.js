@@ -461,7 +461,7 @@ const App = {
           <p class="protocol-text">${weekProtocol.protocol}</p>
           <p class="protocol-detail">Total: ${weekProtocol.totalTime} min (${weekProtocol.runningTime} min running)</p>
         </div>
-        <p class="workout-notes">${runDetails.notes}</p>
+        <p class="run-notes">${runDetails.notes}</p>
         ${this.renderRunInputs(log)}
       `;
     }
@@ -484,7 +484,7 @@ const App = {
     return `
       <h2>${workout.name}</h2>
       ${targetMiles > 0 ? `<p class="target-miles">Target: ${targetMiles} miles</p>` : ''}
-      <p class="workout-notes">${notes}</p>
+      <p class="run-notes">${notes}</p>
       ${this.renderRunInputs(log)}
       ${hasStrides ? this.renderStridesInput(log) : ''}
     `;
@@ -492,19 +492,26 @@ const App = {
 
   renderRunInputs(log) {
     const run = log?.run || { distance: '', duration: '', avgHR: '' };
+    // Convert legacy numeric duration to mm:ss display
+    let durationDisplay = run.duration || '';
+    if (durationDisplay && !durationDisplay.includes(':')) {
+      const mins = Math.floor(parseFloat(durationDisplay));
+      const secs = Math.round((parseFloat(durationDisplay) - mins) * 60);
+      durationDisplay = `${mins}:${String(secs).padStart(2, '0')}`;
+    }
     return `
       <div class="run-inputs">
         <div class="input-group">
-          <label>Distance (miles)</label>
-          <input type="number" step="0.1" id="run-distance" value="${run.distance}" placeholder="0.0">
+          <label>Distance (mi)</label>
+          <input type="number" step="0.1" id="run-distance" value="${run.distance}" placeholder="0.0" inputmode="decimal">
         </div>
         <div class="input-group">
-          <label>Duration (min)</label>
-          <input type="number" id="run-duration" value="${run.duration}" placeholder="0">
+          <label>Duration (mm:ss)</label>
+          <input type="text" id="run-duration" value="${durationDisplay}" placeholder="00:00" inputmode="numeric" maxlength="5">
         </div>
         <div class="input-group">
-          <label>Avg HR (bpm)</label>
-          <input type="number" id="run-avghr" value="${run.avgHR}" placeholder="0">
+          <label>Avg HR</label>
+          <input type="number" id="run-avghr" value="${run.avgHR}" placeholder="0" inputmode="numeric">
         </div>
       </div>
     `;
@@ -976,9 +983,19 @@ const App = {
 
   saveRunData() {
     const log = Storage.getLog(this.currentDate) || {};
+    const durationRaw = document.getElementById('run-duration')?.value || '';
+    // Auto-format: if user types just digits, insert colon (e.g. "2530" -> "25:30")
+    let duration = durationRaw;
+    if (duration && !duration.includes(':') && duration.length >= 2) {
+      const secs = duration.slice(-2);
+      const mins = duration.slice(0, -2) || '0';
+      duration = `${mins}:${secs}`;
+      const input = document.getElementById('run-duration');
+      if (input) input.value = duration;
+    }
     log.run = {
       distance: document.getElementById('run-distance')?.value || '',
-      duration: document.getElementById('run-duration')?.value || '',
+      duration: duration,
       avgHR: document.getElementById('run-avghr')?.value || ''
     };
     Storage.saveLog(this.currentDate, log);
