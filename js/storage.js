@@ -94,6 +94,7 @@ const Storage = {
         startDate: DEFAULT_START_DATE,
         logs: {},
         dailyRoutines: {},
+        exerciseWeights: {},
         weekReorderings: {},
         exerciseSetsReps: {},
         version: CURRENT_VERSION

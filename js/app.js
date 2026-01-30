@@ -2640,5 +2640,14 @@ const App = {
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  App.init();
+  App.init().catch(err => {
+    console.error('[App] Init failed:', err);
+    const content = document.getElementById('main-content');
+    if (content) {
+      content.innerHTML = `<div style="padding: 20px; color: red;">
+        <p>App failed to load: ${err.message}</p>
+        <p><button onclick="location.reload()">Reload</button></p>
+      </div>`;
+    }
+  });
 });
