@@ -26,10 +26,29 @@ const IDBStorage = {
     try {
       this._db = await new Promise((resolve, reject) => {
         const request = indexedDB.open(this.DB_NAME, this.DB_VERSION);
+        let settled = false;
+
+        // Timeout: if IDB is locked by another tab/PWA instance, don't hang forever
+        const timer = setTimeout(() => {
+          if (!settled) {
+            settled = true;
+            console.warn('[IDB] Open timed out (database locked by another context)');
+            reject(new Error('IDB open timed out'));
+          }
+        }, 3000);
 
         request.onerror = () => {
-          console.warn('[IDB] Failed to open database:', request.error);
-          reject(request.error);
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            console.warn('[IDB] Failed to open database:', request.error);
+            reject(request.error);
+          }
+        };
+
+        request.onblocked = () => {
+          console.warn('[IDB] Database open blocked by another connection');
+          // Don't reject here — let the timeout handle it in case unblock happens soon
         };
 
         request.onupgradeneeded = (event) => {
@@ -40,7 +59,11 @@ const IDBStorage = {
         };
 
         request.onsuccess = () => {
-          resolve(request.result);
+          if (!settled) {
+            settled = true;
+            clearTimeout(timer);
+            resolve(request.result);
+          }
         };
       });
 
