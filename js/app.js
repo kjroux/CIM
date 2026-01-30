@@ -113,6 +113,10 @@ const App = {
         contentArea.innerHTML = this.renderLibraryView();
         this.setupLibraryListeners();
         break;
+      case 'running':
+        contentArea.innerHTML = this.renderRunningView();
+        this.setupRunningListeners();
+        break;
       case 'exercise-detail':
         contentArea.innerHTML = this.renderExerciseDetailView();
         this.setupExerciseDetailListeners();
@@ -2307,6 +2311,306 @@ const App = {
         }
       });
     });
+  },
+
+  // ========== Running Stats View ==========
+
+  formatPace(minsPerMile) {
+    if (!minsPerMile || minsPerMile <= 0) return '--:--';
+    const mins = Math.floor(minsPerMile);
+    const secs = Math.round((minsPerMile - mins) * 60);
+    return `${mins}:${String(secs).padStart(2, '0')}`;
+  },
+
+  formatDuration(totalMinutes) {
+    if (!totalMinutes || totalMinutes <= 0) return '0:00';
+    const hrs = Math.floor(totalMinutes / 60);
+    const mins = Math.round(totalMinutes % 60);
+    if (hrs > 0) return `${hrs}h ${mins}m`;
+    return `${mins}m`;
+  },
+
+  renderRunningView() {
+    const startDate = Storage.getStartDate();
+    const info = this.getProgramInfo(this.currentDate);
+    const runs = Storage.getAllRunData();
+    const weeklySummaries = Storage.getWeeklyRunSummaries(startDate);
+
+    // Program totals
+    const totalDistance = runs.reduce((sum, r) => sum + r.distance, 0);
+    const totalDuration = runs.reduce((sum, r) => sum + r.duration, 0);
+    const totalRuns = runs.length;
+    const avgPace = totalDistance > 0 ? totalDuration / totalDistance : 0;
+    const runsWithHR = runs.filter(r => r.avgHR > 0);
+    const avgHR = runsWithHR.length > 0
+      ? Math.round(runsWithHR.reduce((sum, r) => sum + r.avgHR, 0) / runsWithHR.length)
+      : 0;
+
+    // This week stats
+    const currentWeek = (info.status === 'active') ? info.week : null;
+    const thisWeekSummary = currentWeek ? weeklySummaries.find(w => w.week === currentWeek) : null;
+    const weekTarget = currentWeek && MILEAGE_TARGETS[currentWeek] ? MILEAGE_TARGETS[currentWeek].total : 0;
+    const weekDistance = thisWeekSummary ? thisWeekSummary.totalDistance : 0;
+    const weekProgress = weekTarget > 0 ? Math.min(weekDistance / weekTarget * 100, 100) : 0;
+
+    let html = `<div class="running-view">`;
+
+    // Header
+    html += `
+      <div class="running-header">
+        <h1>Running Stats</h1>
+        ${currentWeek ? `<div class="running-week-badge">Week ${currentWeek}</div>` : ''}
+      </div>`;
+
+    // Empty state
+    if (runs.length === 0) {
+      html += `
+        <div class="running-empty">
+          <p>No runs logged yet.</p>
+          <p>Complete a run workout and your stats will appear here.</p>
+        </div>
+      </div>`;
+      return html;
+    }
+
+    // This Week card
+    if (currentWeek) {
+      html += `
+        <div class="running-card">
+          <h3 class="running-card-title">This Week</h3>
+          <div class="running-this-week">
+            <div class="running-progress-row">
+              <span class="running-progress-label">${weekDistance.toFixed(1)} / ${weekTarget} mi</span>
+              <span class="running-progress-pct">${Math.round(weekProgress)}%</span>
+            </div>
+            <div class="running-progress-bar">
+              <div class="running-progress-fill" style="width: ${weekProgress}%"></div>
+            </div>
+            <div class="running-week-stats">
+              <div class="running-stat-mini">
+                <span class="running-stat-mini-value">${thisWeekSummary ? thisWeekSummary.runCount : 0}</span>
+                <span class="running-stat-mini-label">Runs</span>
+              </div>
+              <div class="running-stat-mini">
+                <span class="running-stat-mini-value">${thisWeekSummary ? this.formatPace(thisWeekSummary.avgPace) : '--:--'}</span>
+                <span class="running-stat-mini-label">Avg Pace</span>
+              </div>
+              <div class="running-stat-mini">
+                <span class="running-stat-mini-value">${thisWeekSummary && thisWeekSummary.avgHR > 0 ? thisWeekSummary.avgHR : '--'}</span>
+                <span class="running-stat-mini-label">Avg HR</span>
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }
+
+    // Program Totals card
+    html += `
+      <div class="running-card">
+        <h3 class="running-card-title">Program Totals</h3>
+        <div class="running-totals-grid">
+          <div class="running-total">
+            <span class="running-total-value">${totalDistance.toFixed(1)}</span>
+            <span class="running-total-label">Miles</span>
+          </div>
+          <div class="running-total">
+            <span class="running-total-value">${totalRuns}</span>
+            <span class="running-total-label">Runs</span>
+          </div>
+          <div class="running-total">
+            <span class="running-total-value">${this.formatDuration(totalDuration)}</span>
+            <span class="running-total-label">Time</span>
+          </div>
+          <div class="running-total">
+            <span class="running-total-value">${this.formatPace(avgPace)}</span>
+            <span class="running-total-label">Avg Pace</span>
+          </div>
+        </div>
+      </div>`;
+
+    // Weekly Mileage chart
+    if (weeklySummaries.length > 0) {
+      html += this.renderWeeklyMileageChart(weeklySummaries);
+    }
+
+    // Pace Trend chart
+    const runsWithPace = runs.filter(r => r.pace > 0);
+    if (runsWithPace.length >= 2) {
+      html += this.renderPaceTrendChart(runsWithPace);
+    }
+
+    // Cardiac Efficiency chart
+    const runsWithEfficiency = runs.filter(r => r.efficiency > 0);
+    if (runsWithEfficiency.length >= 2) {
+      html += this.renderEfficiencyChart(runsWithEfficiency);
+    }
+
+    // Recent Runs
+    html += this.renderRecentRunsList(runs);
+
+    html += '</div>';
+    return html;
+  },
+
+  renderWeeklyMileageChart(weeklySummaries) {
+    // Determine range: show all weeks that have targets or data
+    const allWeeks = [];
+    const dataWeeks = new Set(weeklySummaries.map(w => w.week));
+
+    // Include weeks 5-21 (when mileage targets exist) and any earlier weeks with data
+    const minWeek = Math.min(5, ...weeklySummaries.map(w => w.week));
+    const maxWeek = Math.max(21, ...weeklySummaries.map(w => w.week));
+
+    for (let w = minWeek; w <= maxWeek; w++) {
+      const summary = weeklySummaries.find(s => s.week === w);
+      const target = MILEAGE_TARGETS[w]?.total || 0;
+      if (summary || target > 0) {
+        allWeeks.push({
+          week: w,
+          actual: summary ? summary.totalDistance : 0,
+          target: target,
+          isDeload: MILEAGE_TARGETS[w]?.isDeload || false
+        });
+      }
+    }
+
+    if (allWeeks.length === 0) return '';
+
+    const maxValue = Math.max(...allWeeks.map(w => Math.max(w.actual, w.target)), 1);
+    const barHeight = 120;
+
+    let bars = '';
+    for (const w of allWeeks) {
+      const actualHeight = (w.actual / maxValue) * barHeight;
+      const targetHeight = (w.target / maxValue) * barHeight;
+
+      bars += `
+        <div class="mileage-bar-group">
+          <div class="mileage-bar-container" style="height: ${barHeight}px">
+            ${w.target > 0 ? `<div class="mileage-bar-target" style="height: ${targetHeight}px" title="Target: ${w.target} mi"></div>` : ''}
+            <div class="mileage-bar-actual${w.isDeload ? ' deload' : ''}" style="height: ${actualHeight}px"></div>
+          </div>
+          <span class="mileage-bar-label">W${w.week}</span>
+        </div>`;
+    }
+
+    return `
+      <div class="running-card">
+        <h3 class="running-card-title">Weekly Mileage</h3>
+        <div class="mileage-chart-scroll">
+          <div class="mileage-chart">
+            ${bars}
+          </div>
+        </div>
+        <div class="mileage-legend">
+          <span class="mileage-legend-item"><span class="mileage-legend-dot actual"></span>Actual</span>
+          <span class="mileage-legend-item"><span class="mileage-legend-dot target"></span>Target</span>
+        </div>
+      </div>`;
+  },
+
+  renderPaceTrendChart(runs) {
+    return this.renderTrendChart(runs, 'pace', 'Pace Trend', 'min/mi', true);
+  },
+
+  renderEfficiencyChart(runs) {
+    return this.renderTrendChart(runs, 'efficiency', 'Cardiac Efficiency', 'speed/HR', false);
+  },
+
+  renderTrendChart(runs, field, title, unit, invertY) {
+    // SVG line chart
+    const width = Math.max(300, runs.length * 40);
+    const height = 140;
+    const padX = 40;
+    const padY = 20;
+    const plotW = width - padX - 10;
+    const plotH = height - padY * 2;
+
+    const values = runs.map(r => r[field]);
+    const minVal = Math.min(...values) * 0.9;
+    const maxVal = Math.max(...values) * 1.1;
+    const range = maxVal - minVal || 1;
+
+    const points = runs.map((r, i) => {
+      const x = padX + (i / (runs.length - 1)) * plotW;
+      const normalized = (r[field] - minVal) / range;
+      const y = invertY
+        ? padY + normalized * plotH   // Lower pace = better = top
+        : padY + (1 - normalized) * plotH;  // Higher efficiency = better = top
+      return { x, y, value: r[field], date: r.date };
+    });
+
+    const pathData = points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(' ');
+
+    // Y-axis labels
+    const topVal = invertY ? minVal : maxVal;
+    const bottomVal = invertY ? maxVal : minVal;
+    const topLabel = field === 'pace' ? this.formatPace(topVal) : topVal.toFixed(1);
+    const bottomLabel = field === 'pace' ? this.formatPace(bottomVal) : bottomVal.toFixed(1);
+
+    // Dots
+    const dots = points.map(p =>
+      `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="3.5" fill="var(--color-primary)" />`
+    ).join('');
+
+    // Date labels (show first and last)
+    const firstDate = runs[0].date.slice(5); // MM-DD
+    const lastDate = runs[runs.length - 1].date.slice(5);
+
+    return `
+      <div class="running-card">
+        <h3 class="running-card-title">${title}</h3>
+        <div class="trend-chart-scroll">
+          <svg class="trend-chart" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}">
+            <text x="${padX - 4}" y="${padY + 4}" text-anchor="end" class="chart-label">${topLabel}</text>
+            <text x="${padX - 4}" y="${padY + plotH + 4}" text-anchor="end" class="chart-label">${bottomLabel}</text>
+            <line x1="${padX}" y1="${padY}" x2="${padX}" y2="${padY + plotH}" stroke="var(--color-border)" stroke-width="1" />
+            <line x1="${padX}" y1="${padY + plotH}" x2="${padX + plotW}" y2="${padY + plotH}" stroke="var(--color-border)" stroke-width="1" />
+            <path d="${pathData}" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+            ${dots}
+            <text x="${padX}" y="${height - 2}" class="chart-label">${firstDate}</text>
+            <text x="${padX + plotW}" y="${height - 2}" text-anchor="end" class="chart-label">${lastDate}</text>
+          </svg>
+        </div>
+      </div>`;
+  },
+
+  renderRecentRunsList(runs) {
+    const recent = runs.slice(-10).reverse();
+
+    let rows = '';
+    for (const run of recent) {
+      const dateObj = this.parseDate(run.date);
+      const dayName = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][dateObj.getDay()];
+      const monthDay = `${dateObj.getMonth() + 1}/${dateObj.getDate()}`;
+
+      rows += `
+        <div class="recent-run-row">
+          <div class="recent-run-date">
+            <span class="recent-run-day">${dayName}</span>
+            <span class="recent-run-monthday">${monthDay}</span>
+          </div>
+          <div class="recent-run-distance">${run.distance > 0 ? run.distance.toFixed(1) + ' mi' : '--'}</div>
+          <div class="recent-run-pace">${this.formatPace(run.pace)}</div>
+          <div class="recent-run-hr">${run.avgHR > 0 ? run.avgHR + '' : '--'}</div>
+        </div>`;
+    }
+
+    return `
+      <div class="running-card">
+        <h3 class="running-card-title">Recent Runs</h3>
+        <div class="recent-runs-header">
+          <span>Date</span>
+          <span>Distance</span>
+          <span>Pace</span>
+          <span>HR</span>
+        </div>
+        ${rows}
+      </div>`;
+  },
+
+  setupRunningListeners() {
+    // No interactive elements yet — charts are display-only
   }
 };
 

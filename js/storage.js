@@ -420,6 +420,86 @@ const Storage = {
     }
   },
 
+  // Get all run data from logs, sorted by date
+  getAllRunData() {
+    const userData = this.getUserData();
+    if (!userData || !userData.logs) return [];
+
+    const runs = [];
+    Object.keys(userData.logs).sort().forEach(date => {
+      const log = userData.logs[date];
+      if (log.run && (log.run.distance || log.run.duration)) {
+        const distance = parseFloat(log.run.distance) || 0;
+        const duration = parseFloat(log.run.duration) || 0;
+        const avgHR = parseFloat(log.run.avgHR) || 0;
+        const pace = distance > 0 && duration > 0 ? duration / distance : 0;
+        const efficiency = avgHR > 0 && duration > 0 && distance > 0
+          ? (distance / duration) * 60 / avgHR * 100 // speed(mph) / HR * 100
+          : 0;
+
+        runs.push({
+          date,
+          distance,
+          duration,
+          avgHR,
+          pace,
+          efficiency,
+          workoutType: log.scheduled?.type || '',
+          workoutName: log.scheduled?.name || 'Run',
+          completed: log.completed || false
+        });
+      }
+    });
+    return runs;
+  },
+
+  // Get weekly run summaries grouped by program week
+  getWeeklyRunSummaries(startDate) {
+    const runs = this.getAllRunData();
+    if (runs.length === 0) return [];
+
+    const weekMap = {};
+    const start = new Date(startDate + 'T00:00:00');
+
+    for (const run of runs) {
+      const runDate = new Date(run.date + 'T00:00:00');
+      const daysDiff = Math.floor((runDate - start) / (1000 * 60 * 60 * 24));
+      if (daysDiff < 0) continue;
+      const weekNum = Math.floor(daysDiff / 7) + 1;
+
+      if (!weekMap[weekNum]) {
+        weekMap[weekNum] = {
+          week: weekNum,
+          totalDistance: 0,
+          totalDuration: 0,
+          totalHR: 0,
+          hrCount: 0,
+          runCount: 0,
+          target: MILEAGE_TARGETS[weekNum]?.total || 0,
+          isDeload: MILEAGE_TARGETS[weekNum]?.isDeload || false
+        };
+      }
+
+      const w = weekMap[weekNum];
+      w.totalDistance += run.distance;
+      w.totalDuration += run.duration;
+      if (run.avgHR > 0) {
+        w.totalHR += run.avgHR;
+        w.hrCount++;
+      }
+      w.runCount++;
+    }
+
+    // Calculate averages
+    const weeks = Object.values(weekMap).sort((a, b) => a.week - b.week);
+    for (const w of weeks) {
+      w.avgPace = w.totalDistance > 0 ? w.totalDuration / w.totalDistance : 0;
+      w.avgHR = w.hrCount > 0 ? Math.round(w.totalHR / w.hrCount) : 0;
+    }
+
+    return weeks;
+  },
+
   // Get/set last export timestamp
   getLastExportDate() {
     return localStorage.getItem('cim_last_export') || null;

@@ -93,7 +93,7 @@ body {
   height: 100%;
   color: var(--color-text-light);
   text-decoration: none;
-  font-size: 12px;
+  font-size: 11px;
   border: none;
   background: none;
   cursor: pointer;
@@ -106,7 +106,7 @@ body {
 }
 
 .nav-icon {
-  font-size: 24px;
+  font-size: 20px;
   margin-bottom: 2px;
 }
 
@@ -1595,5 +1595,311 @@ body {
 
 .library-card-sessions {
   font-size: 12px;
+  color: var(--color-text-light);
+}
+
+/* ========== Running Stats View ========== */
+
+.running-view {
+  padding-bottom: calc(var(--nav-height) + 20px);
+}
+
+.running-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 16px 8px;
+}
+
+.running-header h1 {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.running-week-badge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-run);
+  background: rgba(15, 157, 88, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+.running-empty {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--color-text-light);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.running-card {
+  margin: 8px 16px;
+  padding: 16px;
+  background: var(--color-card);
+  border-radius: 12px;
+  border: 1px solid var(--color-border);
+}
+
+.running-card-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 12px;
+}
+
+/* This Week card */
+.running-progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 6px;
+}
+
+.running-progress-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.running-progress-pct {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--color-run);
+}
+
+.running-progress-bar {
+  height: 8px;
+  background: var(--color-border);
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.running-progress-fill {
+  height: 100%;
+  background: var(--color-run);
+  border-radius: 4px;
+  transition: width 0.3s;
+}
+
+.running-week-stats {
+  display: flex;
+  justify-content: space-around;
+}
+
+.running-stat-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.running-stat-mini-value {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.running-stat-mini-label {
+  font-size: 11px;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+/* Program Totals */
+.running-totals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.running-total {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.running-total-value {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.running-total-label {
+  font-size: 12px;
+  color: var(--color-text-light);
+  margin-top: 2px;
+}
+
+/* Weekly Mileage Chart */
+.mileage-chart-scroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mileage-chart-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.mileage-chart {
+  display: flex;
+  gap: 6px;
+  align-items: flex-end;
+  min-width: max-content;
+  padding-bottom: 4px;
+}
+
+.mileage-bar-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 28px;
+}
+
+.mileage-bar-container {
+  position: relative;
+  width: 20px;
+  display: flex;
+  align-items: flex-end;
+}
+
+.mileage-bar-target {
+  position: absolute;
+  bottom: 0;
+  left: -2px;
+  right: -2px;
+  background: rgba(15, 157, 88, 0.15);
+  border-radius: 3px 3px 0 0;
+  border-top: 2px dashed rgba(15, 157, 88, 0.4);
+}
+
+.mileage-bar-actual {
+  position: relative;
+  width: 100%;
+  background: var(--color-run);
+  border-radius: 3px 3px 0 0;
+  min-height: 2px;
+}
+
+.mileage-bar-actual.deload {
+  background: var(--color-deload);
+}
+
+.mileage-bar-label {
+  font-size: 9px;
+  color: var(--color-text-light);
+  margin-top: 4px;
+}
+
+.mileage-legend {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+.mileage-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+.mileage-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.mileage-legend-dot.actual {
+  background: var(--color-run);
+}
+
+.mileage-legend-dot.target {
+  background: rgba(15, 157, 88, 0.15);
+  border: 1px dashed rgba(15, 157, 88, 0.4);
+}
+
+/* Trend Charts */
+.trend-chart-scroll {
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+}
+
+.trend-chart-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.trend-chart {
+  display: block;
+  min-width: 100%;
+}
+
+.chart-label {
+  font-size: 10px;
+  fill: var(--color-text-light);
+  font-family: inherit;
+}
+
+/* Recent Runs */
+.recent-runs-header {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 0.6fr;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--color-text-light);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.recent-run-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 0.6fr;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.recent-run-row:last-child {
+  border-bottom: none;
+}
+
+.recent-run-date {
+  display: flex;
+  flex-direction: column;
+}
+
+.recent-run-day {
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.recent-run-monthday {
+  font-size: 11px;
+  color: var(--color-text-light);
+}
+
+.recent-run-distance {
+  font-weight: 500;
+}
+
+.recent-run-pace {
+  color: var(--color-run);
+  font-weight: 500;
+}
+
+.recent-run-hr {
   color: var(--color-text-light);
 }
