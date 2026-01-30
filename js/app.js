@@ -1075,7 +1075,14 @@ const App = {
       const workoutType = weekTemplate[workoutDayNumber];
 
       // Get workout details and log for this date
-      const workout = workoutType ? { type: workoutType.type, name: workoutType.name } : null;
+      // Use phase-specific name from WORKOUT_DETAILS when available (has descriptive subtitles)
+      let workoutName = workoutType ? workoutType.name : null;
+      if (workoutType && WORKOUT_DETAILS[workoutType.type]) {
+        const phaseKey = `phase${info.phase}`;
+        const details = WORKOUT_DETAILS[workoutType.type]?.[phaseKey];
+        if (details?.name) workoutName = details.name;
+      }
+      const workout = workoutType ? { type: workoutType.type, name: workoutName } : null;
       const log = Storage.getLog(dateString);
 
       if (workout && workout.type !== 'rest' && workout.type !== 'optional') {
