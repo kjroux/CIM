@@ -1133,7 +1133,7 @@ const App = {
       const dayName = this.formatDisplayDate(dateString).split(',')[0];
       const month = this.formatDisplayDate(dateString).split(' ')[1];
       const day = dateString.split('-')[2];
-      const workoutName = workout ? workout.name : 'Rest';
+      const displayName = workout ? workoutName : 'Rest';
 
       days.push(`
         <div class="week-day ${typeClass}"
@@ -1146,7 +1146,7 @@ const App = {
             <div class="day-date">${month} ${day}</div>
           </div>
           <div class="day-middle">
-            <div class="day-workout">${workoutName}</div>
+            <div class="day-workout">${displayName}</div>
           </div>
           <div class="day-right">
             <div class="day-status">${status}</div>
