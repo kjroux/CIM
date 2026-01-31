@@ -16,6 +16,8 @@ const App = {
     longPressTimer: null
   },
 
+  _initComplete: false,
+
   async init() {
     // Initialize storage (async: loads from IDB, falls back to localStorage)
     await Storage.initStorage();
@@ -23,14 +25,17 @@ const App = {
     // Set current date
     this.currentDate = this.getTodayDateString();
 
-    // Register service worker
-    this.registerServiceWorker();
-
     // Setup event listeners
     this.setupEventListeners();
 
     // Render initial view
     this.renderView('today');
+
+    // Mark init complete before registering SW to prevent reload loops
+    this._initComplete = true;
+
+    // Register service worker after app is rendered
+    this.registerServiceWorker();
   },
 
   registerServiceWorker() {
@@ -51,7 +56,6 @@ const App = {
 
             newWorker.addEventListener('statechange', () => {
               if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                // New service worker available, prompt user to reload
                 console.log('[App] New version available! Reloading in 2 seconds...');
                 setTimeout(() => {
                   window.location.reload();
@@ -62,8 +66,11 @@ const App = {
         })
         .catch(err => console.log('[App] Service Worker registration failed:', err));
 
-      // Listen for controller change and reload page
+      // Listen for controller change — only reload if app already rendered
+      let reloading = false;
       navigator.serviceWorker.addEventListener('controllerchange', () => {
+        if (reloading) return;
+        reloading = true;
         console.log('[App] Controller changed, reloading page');
         window.location.reload();
       });
@@ -2640,14 +2647,43 @@ const App = {
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  App.init().catch(err => {
+  // Safety timeout: if init hangs for 6 seconds, force a localStorage-only render
+  const safetyTimer = setTimeout(() => {
+    if (!App._initComplete) {
+      console.warn('[App] Init timed out, forcing render with localStorage data');
+      try {
+        App.currentDate = App.getTodayDateString();
+        App.setupEventListeners();
+        App.renderView('today');
+        App._initComplete = true;
+        App.registerServiceWorker();
+      } catch (e) {
+        console.error('[App] Safety render failed:', e);
+      }
+    }
+  }, 6000);
+
+  App.init().then(() => {
+    clearTimeout(safetyTimer);
+  }).catch(err => {
+    clearTimeout(safetyTimer);
     console.error('[App] Init failed:', err);
-    const content = document.getElementById('main-content');
-    if (content) {
-      content.innerHTML = `<div style="padding: 20px; color: red;">
-        <p>App failed to load: ${err.message}</p>
-        <p><button onclick="location.reload()">Reload</button></p>
-      </div>`;
+    // If init failed but safety timer hasn't fired, try rendering anyway
+    if (!App._initComplete) {
+      try {
+        App.currentDate = App.getTodayDateString();
+        App.setupEventListeners();
+        App.renderView('today');
+        App._initComplete = true;
+      } catch (e2) {
+        const content = document.getElementById('main-content');
+        if (content) {
+          content.innerHTML = `<div style="padding: 20px; color: red;">
+            <p>App failed to load: ${err.message}</p>
+            <p><button onclick="location.reload()">Reload</button></p>
+          </div>`;
+        }
+      }
     }
   });
 });
