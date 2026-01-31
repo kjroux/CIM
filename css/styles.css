@@ -752,11 +752,15 @@ body {
 /* EXERCISE DETAIL PAGE */
 
 .exercise-detail-page {
-  padding-bottom: calc(var(--nav-height) + 20px);
+  min-height: calc(100vh - var(--nav-height));
+  min-height: calc(100dvh - var(--nav-height));
+  display: flex;
+  flex-direction: column;
 }
 
 .exercise-detail-header {
   padding: 20px;
+  padding-top: calc(20px + env(safe-area-inset-top, 0px));
   border-bottom: 1px solid var(--color-border);
 }
 
@@ -815,6 +819,8 @@ body {
 
 .exercise-detail-content {
   padding: 20px;
+  flex: 1;
+  overflow-y: auto;
 }
 
 /* Weight Tab */
