@@ -215,14 +215,16 @@ body {
 
 /* Exercises */
 .exercises-list {
-  margin-top: 20px;
+  margin-top: 12px;
 }
 
 .exercise-item {
-  background-color: var(--color-bg);
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 16px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.exercise-item:last-child {
+  border-bottom: none;
 }
 
 .exercise-header {

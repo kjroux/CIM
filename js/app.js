@@ -370,12 +370,20 @@ const App = {
       const loggedWeight = exerciseLog.weight || Storage.getExerciseWeight(ex.id) || '';
       const repsDisplay = typeof ex.reps === 'number' ? `${ex.reps} reps` : ex.reps;
 
+      // Show weight if available, otherwise show sets x reps
+      let metaDisplay;
+      if (loggedWeight && !ex.bodyweight) {
+        metaDisplay = `${loggedWeight} lbs`;
+      } else {
+        metaDisplay = `${ex.sets}x${repsDisplay}`;
+      }
+
       return `
         <div class="exercise-item" data-exercise-id="${ex.id}" data-exercise-name="${ex.name}">
           <div class="exercise-header clickable-exercise">
             <div class="exercise-header-content">
               <h4>${ex.name} →</h4>
-              <span class="exercise-target">${ex.sets}x${repsDisplay}</span>
+              <span class="exercise-target">${metaDisplay}</span>
             </div>
           </div>
           ${ex.notes ? `<p class="exercise-notes">${ex.notes}</p>` : ''}
@@ -388,7 +396,6 @@ const App = {
 
     return `
       <h2>${workoutDetails.name}</h2>
-      <p class="workout-duration">${workoutDetails.duration}</p>
       <div class="exercises-list">
         ${exercises}
       </div>
