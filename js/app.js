@@ -2231,6 +2231,24 @@ const App = {
     const currentPhase = (info.status === 'active') ? info.phase : 1;
     const grouped = getExercisesByCategory();
 
+    // Determine today's lift type (if any) for highlighting
+    const todayWorkout = this.getScheduledWorkout(this.currentDate);
+    const todayLiftType = todayWorkout && todayWorkout.type.includes('lift') ? todayWorkout.type : null;
+
+    // Build lookup: exerciseId → set of lift types it appears in (across current phase)
+    const phaseKey = `phase${currentPhase}`;
+    const liftTypes = ['lift-a', 'lift-b', 'lift-c'];
+    const liftLabels = { 'lift-a': 'A', 'lift-b': 'B', 'lift-c': 'C' };
+    const exerciseLiftDays = {};
+    for (const lt of liftTypes) {
+      const phaseData = WORKOUT_DETAILS[lt]?.[phaseKey];
+      if (!phaseData?.exercises) continue;
+      for (const ex of phaseData.exercises) {
+        if (!exerciseLiftDays[ex.id]) exerciseLiftDays[ex.id] = [];
+        if (!exerciseLiftDays[ex.id].includes(lt)) exerciseLiftDays[ex.id].push(lt);
+      }
+    }
+
     let html = `
       <div class="library-view">
         <div class="library-header">
@@ -2264,13 +2282,14 @@ const App = {
           weightDisplay = 'Bodyweight';
         }
 
-        // Phase badges
-        const phaseBadges = ex.phases.map(p =>
-          `<span class="library-phase-pip${p === currentPhase ? ' current' : ''}">${p}</span>`
+        // Lift day badges (A/B/C) — highlight today's lift day
+        const days = exerciseLiftDays[ex.id] || [];
+        const dayBadges = days.map(lt =>
+          `<span class="library-phase-pip${lt === todayLiftType ? ' current' : ''}">${liftLabels[lt]}</span>`
         ).join('');
 
         // Check if this exercise exists in the current phase
-        const inCurrentPhase = ex.phases.includes(currentPhase);
+        const inCurrentPhase = days.length > 0;
 
         html += `
           <div class="library-card${inCurrentPhase ? '' : ' library-card-inactive'}" data-exercise-id="${ex.id}">
@@ -2282,7 +2301,7 @@ const App = {
               </div>
             </div>
             <div class="library-card-footer">
-              <div class="library-card-phases">${phaseBadges}</div>
+              <div class="library-card-phases">${dayBadges}</div>
               ${sessionCount > 0 ? `<div class="library-card-sessions">${sessionCount} session${sessionCount !== 1 ? 's' : ''}</div>` : ''}
             </div>
           </div>`;
