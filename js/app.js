@@ -269,18 +269,6 @@ const App = {
           ${this.renderWorkoutContent(workout, info, log)}
         </div>
 
-        <div class="daily-routines">
-          <h3>Daily Routines</h3>
-          <label class="routine-checkbox">
-            <input type="checkbox" id="morning-routine" ${routines.morning ? 'checked' : ''}>
-            <span>Morning Routine</span>
-          </label>
-          <label class="routine-checkbox">
-            <input type="checkbox" id="evening-routine" ${routines.evening ? 'checked' : ''}>
-            <span>Evening Routine</span>
-          </label>
-        </div>
-
         <div class="workout-notes">
           <label for="notes-input">Notes:</label>
           <textarea id="notes-input" rows="3" placeholder="Log notes about today's workout...">${log?.notes || ''}</textarea>
@@ -295,6 +283,18 @@ const App = {
             '<button class="btn btn-secondary" id="btn-skip">Skip Workout</button>' :
             '<button class="btn btn-secondary" id="btn-unskip">Unskip Workout</button>'
           }
+        </div>
+
+        <div class="daily-routines">
+          <h3>Daily Routines</h3>
+          <label class="routine-checkbox">
+            <input type="checkbox" id="morning-routine" ${routines.morning ? 'checked' : ''}>
+            <span>Morning Routine</span>
+          </label>
+          <label class="routine-checkbox">
+            <input type="checkbox" id="evening-routine" ${routines.evening ? 'checked' : ''}>
+            <span>Evening Routine</span>
+          </label>
         </div>
       </div>
     `;
