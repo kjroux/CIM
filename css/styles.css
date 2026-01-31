@@ -51,11 +51,14 @@ body {
   /* Additional zoom prevention */
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
+  /* Prevent iOS overscroll from displacing fixed nav */
+  overscroll-behavior: none;
 }
 
 /* App Container */
 #app {
   min-height: 100vh;
+  min-height: 100dvh;
 }
 
 #main-content {
@@ -77,11 +80,6 @@ body {
   justify-content: space-around;
   align-items: center;
   z-index: 100;
-  /* iOS Safari fixed position fix */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 
 .nav-item {
@@ -670,6 +668,7 @@ body {
   padding: 20px;
   background-color: var(--color-card);
   min-height: calc(100vh - var(--nav-height));
+  overflow: hidden;
 }
 
 .settings-view h2 {
@@ -702,11 +701,14 @@ body {
 
 .setting-item input[type="date"] {
   width: 100%;
+  max-width: 100%;
   padding: 12px;
   border: 1px solid var(--color-border);
   border-radius: 6px;
   font-size: 16px;
   margin-bottom: 12px;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
 .setting-note {
