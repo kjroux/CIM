@@ -289,7 +289,7 @@ const App = {
         <div class="workout-actions">
           ${log?.completed ?
             '<button class="btn btn-secondary" id="btn-mark-incomplete">Mark Incomplete</button>' :
-            '<button class="btn btn-primary" id="btn-complete">Complete Workout</button>'
+            '<button class="btn btn-primary" id="btn-complete">Complete</button>'
           }
           ${!log?.skipped ?
             '<button class="btn btn-secondary" id="btn-skip">Skip Workout</button>' :
