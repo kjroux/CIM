@@ -33,6 +33,7 @@ const App = {
 
     // Mark init complete before registering SW to prevent reload loops
     this._initComplete = true;
+    if (window._appSafetyTimer) clearTimeout(window._appSafetyTimer);
 
     // Register service worker after app is rendered
     this.registerServiceWorker();

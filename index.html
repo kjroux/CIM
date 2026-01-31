@@ -51,6 +51,39 @@
     </nav>
   </div>
 
+  <!-- Inline safety net: if app doesn't load in 8s, offer cache reset -->
+  <script>
+  (function() {
+    var timer = setTimeout(function() {
+      var el = document.getElementById('main-content');
+      if (el && el.querySelector('p') && el.querySelector('p').textContent === 'Loading...') {
+        el.innerHTML = '<div style="padding:30px 20px;text-align:center;">' +
+          '<p style="color:#D32F2F;font-size:16px;margin-bottom:16px;">App failed to load.</p>' +
+          '<button onclick="clearAndReload()" style="padding:12px 24px;background:#4285F4;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;">Clear Cache & Reload</button>' +
+          '<p style="color:#757575;font-size:13px;margin-top:12px;">This clears the service worker cache and reloads.</p>' +
+          '</div>';
+      }
+    }, 8000);
+    window._appSafetyTimer = timer;
+    window.clearAndReload = function() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(regs) {
+          var promises = regs.map(function(r) { return r.unregister(); });
+          return Promise.all(promises);
+        }).then(function() {
+          return caches.keys();
+        }).then(function(names) {
+          return Promise.all(names.map(function(n) { return caches.delete(n); }));
+        }).then(function() {
+          window.location.reload();
+        });
+      } else {
+        window.location.reload();
+      }
+    };
+  })();
+  </script>
+
   <!-- Scripts -->
   <script src="./js/data.js"></script>
   <script src="./js/idb-storage.js"></script>
