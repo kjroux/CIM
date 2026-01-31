@@ -14,37 +14,40 @@ const Storage = {
   // In-memory cache — all sync reads go through this
   _cache: null,
 
-  // Async initialization: load from IDB (preferred) or localStorage (fallback)
-  async initStorage() {
-    // Initialize IndexedDB
-    const idbReady = await IDBStorage.init();
+  // Initialize storage: load from localStorage immediately, sync IDB in background
+  initStorage() {
+    // Always load from localStorage first — synchronous, instant, never hangs
+    this._cache = this._loadFromLocalStorage();
+    console.log('[Storage] Loaded from localStorage:', this._cache ? 'found data' : 'no data');
 
-    if (idbReady) {
-      // Try loading from IDB first
-      const idbData = await IDBStorage.getData();
-      if (idbData) {
-        console.log('[Storage] Loaded data from IndexedDB');
-        this._cache = idbData;
-        // Sync localStorage as backup
-        this._saveToLocalStorage(idbData);
-      } else {
-        // IDB empty — try localStorage (first run after migration, or fresh)
-        const lsData = this._loadFromLocalStorage();
-        if (lsData) {
-          console.log('[Storage] Migrating data from localStorage to IndexedDB');
-          this._cache = lsData;
-          // Seed IDB with localStorage data
-          IDBStorage.saveData(lsData);
-        }
-      }
-    } else {
-      // IDB unavailable — fall back to localStorage only
-      console.log('[Storage] IndexedDB unavailable, using localStorage only');
-      this._cache = this._loadFromLocalStorage();
-    }
+    // Start IDB sync in background (non-blocking, never delays app startup)
+    this._syncIDBBackground();
 
-    // Now run the normal init/migration logic
+    // Run normal init/migration logic (synchronous)
     return this.initUserData();
+  },
+
+  // Background IDB initialization — never blocks the app
+  _syncIDBBackground() {
+    IDBStorage.init().then(ready => {
+      if (!ready) {
+        console.log('[Storage] IDB unavailable, localStorage only');
+        return;
+      }
+      return IDBStorage.getData().then(idbData => {
+        if (idbData && !this._cache) {
+          // Edge case: localStorage empty but IDB has data (shouldn't happen normally)
+          console.log('[Storage] Recovered data from IDB');
+          this._cache = idbData;
+          this._saveToLocalStorage(idbData);
+        } else if (this._cache) {
+          // Ensure IDB is in sync with localStorage data
+          IDBStorage.saveData(this._cache);
+        }
+      });
+    }).catch(e => {
+      console.warn('[Storage] IDB background sync failed (app unaffected):', e);
+    });
   },
 
   // Read raw data from localStorage

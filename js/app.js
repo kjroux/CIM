@@ -18,9 +18,9 @@ const App = {
 
   _initComplete: false,
 
-  async init() {
-    // Initialize storage (async: loads from IDB, falls back to localStorage)
-    await Storage.initStorage();
+  init() {
+    // Initialize storage — synchronous, loads from localStorage instantly
+    Storage.initStorage();
 
     // Set current date
     this.currentDate = this.getTodayDateString();
@@ -31,7 +31,7 @@ const App = {
     // Render initial view
     this.renderView('today');
 
-    // Mark init complete before registering SW to prevent reload loops
+    // Mark init complete
     this._initComplete = true;
     if (window._appSafetyTimer) clearTimeout(window._appSafetyTimer);
 
@@ -2648,43 +2648,16 @@ const App = {
 
 // Initialize app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
-  // Safety timeout: if init hangs for 6 seconds, force a localStorage-only render
-  const safetyTimer = setTimeout(() => {
-    if (!App._initComplete) {
-      console.warn('[App] Init timed out, forcing render with localStorage data');
-      try {
-        App.currentDate = App.getTodayDateString();
-        App.setupEventListeners();
-        App.renderView('today');
-        App._initComplete = true;
-        App.registerServiceWorker();
-      } catch (e) {
-        console.error('[App] Safety render failed:', e);
-      }
-    }
-  }, 6000);
-
-  App.init().then(() => {
-    clearTimeout(safetyTimer);
-  }).catch(err => {
-    clearTimeout(safetyTimer);
+  try {
+    App.init();
+  } catch (err) {
     console.error('[App] Init failed:', err);
-    // If init failed but safety timer hasn't fired, try rendering anyway
-    if (!App._initComplete) {
-      try {
-        App.currentDate = App.getTodayDateString();
-        App.setupEventListeners();
-        App.renderView('today');
-        App._initComplete = true;
-      } catch (e2) {
-        const content = document.getElementById('main-content');
-        if (content) {
-          content.innerHTML = `<div style="padding: 20px; color: red;">
-            <p>App failed to load: ${err.message}</p>
-            <p><button onclick="location.reload()">Reload</button></p>
-          </div>`;
-        }
-      }
+    const content = document.getElementById('main-content');
+    if (content) {
+      content.innerHTML = '<div style="padding: 20px; color: red;">' +
+        '<p>App failed to load: ' + err.message + '</p>' +
+        '<button onclick="clearAndReload()" style="padding:12px 24px;background:#4285F4;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;margin-top:12px;">Clear Cache & Reload</button>' +
+        '</div>';
     }
-  });
+  }
 });
