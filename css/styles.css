@@ -220,12 +220,11 @@ body {
 
 .exercise-item {
   padding: 16px 0;
-  border-bottom: 1px solid var(--color-border);
+  border-top: 1px solid var(--color-border);
 }
 
-.exercise-item:last-child {
-  border-bottom: none;
-  padding-bottom: 4px;
+.exercise-item:first-child {
+  border-top: none;
 }
 
 .exercise-header {
