@@ -762,7 +762,7 @@ const App = {
         <div class="set-picker-scroll">
           ${this.renderPickerOptions(target, maxValue, isTimeBased)}
         </div>
-        <button class="set-picker-confirm">Confirm</button>
+        <button class="set-picker-confirm">Done</button>
       </div>
     `;
 
