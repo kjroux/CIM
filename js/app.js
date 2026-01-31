@@ -1445,11 +1445,7 @@ const App = {
           <p class="setting-note">This will delete all logged workouts and reset the app.</p>
         </div>
 
-        <div class="setting-item">
-          <h3>About</h3>
-          <p>CIM Marathon Training App v1.0</p>
-          <p>5-month foundation and base building program</p>
-        </div>
+        <p class="setting-note" style="text-align: center; margin-top: 24px;">v5.10</p>
       </div>
     `;
   },
