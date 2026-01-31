@@ -219,8 +219,9 @@ body {
 }
 
 .exercise-item {
-  padding: 12px 0;
+  padding: 12px 0 20px;
   border-bottom: 1px solid var(--color-border);
+  margin-bottom: 4px;
 }
 
 .exercise-item:last-child {
