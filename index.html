@@ -24,6 +24,7 @@
       <!-- Content will be dynamically rendered here -->
       <div style="padding: 40px 20px; text-align: center; color: #757575;">
         <p>Loading...</p>
+        <p style="font-size:10px;color:#bbb;margin-top:20px;">v5.1</p>
       </div>
     </main>
 
@@ -51,36 +52,67 @@
     </nav>
   </div>
 
-  <!-- Inline safety net: if app doesn't load in 8s, offer cache reset -->
+  <!-- Inline safety net and diagnostics -->
   <script>
   (function() {
-    var timer = setTimeout(function() {
-      var el = document.getElementById('main-content');
-      if (el && el.querySelector('p') && el.querySelector('p').textContent === 'Loading...') {
-        el.innerHTML = '<div style="padding:30px 20px;text-align:center;">' +
-          '<p style="color:#D32F2F;font-size:16px;margin-bottom:16px;">App failed to load.</p>' +
-          '<button onclick="clearAndReload()" style="padding:12px 24px;background:#4285F4;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;">Clear Cache & Reload</button>' +
-          '<p style="color:#757575;font-size:13px;margin-top:12px;">This clears the service worker cache and reloads.</p>' +
-          '</div>';
-      }
-    }, 8000);
-    window._appSafetyTimer = timer;
+    // Collect errors from script loading/parsing
+    window._loadErrors = [];
+    window.onerror = function(msg, url, line, col, err) {
+      window._loadErrors.push(msg + ' at ' + url + ':' + line + ':' + col);
+    };
+
     window.clearAndReload = function() {
+      var cleanup = Promise.resolve();
       if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.getRegistrations().then(function(regs) {
-          var promises = regs.map(function(r) { return r.unregister(); });
-          return Promise.all(promises);
+        cleanup = navigator.serviceWorker.getRegistrations().then(function(regs) {
+          return Promise.all(regs.map(function(r) { return r.unregister(); }));
         }).then(function() {
           return caches.keys();
         }).then(function(names) {
           return Promise.all(names.map(function(n) { return caches.delete(n); }));
-        }).then(function() {
-          window.location.reload();
         });
-      } else {
-        window.location.reload();
       }
+      // Force-refresh JS/CSS files in HTTP cache, then reload
+      cleanup.then(function() {
+        var files = ['./js/data.js','./js/idb-storage.js','./js/storage.js','./js/app.js','./css/styles.css','./index.html'];
+        return Promise.all(files.map(function(f) {
+          return fetch(f, {cache:'reload'}).catch(function() {});
+        }));
+      }).then(function() {
+        window.location.reload();
+      });
     };
+
+    // Safety timer: if app hasn't loaded after 6s, show diagnostics
+    window._appSafetyTimer = setTimeout(function() {
+      var el = document.getElementById('main-content');
+      if (!el) return;
+      var p = el.querySelector('p');
+      if (!p || p.textContent !== 'Loading...') return;
+
+      // Check which globals loaded
+      var missing = [];
+      if (typeof PROGRAM === 'undefined') missing.push('data.js');
+      if (typeof IDBStorage === 'undefined') missing.push('idb-storage.js');
+      if (typeof Storage === 'undefined' || typeof Storage.initStorage === 'undefined') missing.push('storage.js');
+      if (typeof App === 'undefined') missing.push('app.js');
+
+      var info = '';
+      if (missing.length > 0) {
+        info = '<p>Failed scripts: ' + missing.join(', ') + '</p>';
+      } else {
+        info = '<p>All scripts loaded but app did not initialize.</p>';
+      }
+      if (window._loadErrors.length > 0) {
+        info += '<p style="font-size:12px;word-break:break-all;">Errors: ' + window._loadErrors.join(' | ') + '</p>';
+      }
+
+      el.innerHTML = '<div style="padding:20px;text-align:center;">' +
+        '<p style="color:#D32F2F;font-size:16px;margin-bottom:12px;">App failed to load.</p>' +
+        '<div style="color:#333;font-size:13px;margin-bottom:16px;text-align:left;padding:0 10px;">' + info + '</div>' +
+        '<button onclick="clearAndReload()" style="padding:12px 24px;background:#4285F4;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;">Clear Cache & Reload</button>' +
+        '</div>';
+    }, 6000);
   })();
   </script>
 

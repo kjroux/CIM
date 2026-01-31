@@ -2654,8 +2654,10 @@ document.addEventListener('DOMContentLoaded', () => {
     console.error('[App] Init failed:', err);
     const content = document.getElementById('main-content');
     if (content) {
+      const stack = (err.stack || '').replace(/</g, '&lt;').substring(0, 500);
       content.innerHTML = '<div style="padding: 20px; color: red;">' +
-        '<p>App failed to load: ' + err.message + '</p>' +
+        '<p><strong>Init error:</strong> ' + err.message + '</p>' +
+        '<pre style="font-size:11px;overflow-x:auto;white-space:pre-wrap;color:#333;margin:12px 0;">' + stack + '</pre>' +
         '<button onclick="clearAndReload()" style="padding:12px 24px;background:#4285F4;color:#fff;border:none;border-radius:8px;font-size:16px;cursor:pointer;margin-top:12px;">Clear Cache & Reload</button>' +
         '</div>';
     }
