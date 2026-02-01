@@ -1060,6 +1060,11 @@ input, textarea, [contenteditable] {
   transition: all 0.2s;
 }
 
+.weight-btn.small-text,
+.time-btn.small-text {
+  font-size: 17px;
+}
+
 .weight-btn:active,
 .time-btn:active {
   background: var(--color-primary);

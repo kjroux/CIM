@@ -1663,9 +1663,9 @@ const App = {
         ${isBarbell ? `<div class="plate-visualization">${this.renderPlateBar(this.calculatePlates(weight))}</div>` : ''}
 
         <div class="weight-adjuster">
-          <button class="weight-btn" data-action="decrease" data-increment="${increment}">-${increment}</button>
+          <button class="weight-btn${increment % 1 !== 0 ? ' small-text' : ''}" data-action="decrease" data-increment="${increment}">-${increment}</button>
           <div class="weight-display" id="weight-value">${weightLabel}</div>
-          <button class="weight-btn" data-action="increase" data-increment="${increment}">+${increment}</button>
+          <button class="weight-btn${increment % 1 !== 0 ? ' small-text' : ''}" data-action="increase" data-increment="${increment}">+${increment}</button>
         </div>
       </div>
     `;
