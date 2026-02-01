@@ -53,6 +53,15 @@ body {
   -webkit-tap-highlight-color: transparent;
   /* Prevent iOS overscroll from displacing fixed nav */
   overscroll-behavior: none;
+  /* Prevent text selection on long-press (app-like behavior) */
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Allow text selection in inputs, textareas, and notes */
+input, textarea, [contenteditable] {
+  -webkit-user-select: text;
+  user-select: text;
 }
 
 /* App Container */
