@@ -1595,6 +1595,23 @@ const App = {
     }
   },
 
+  // Exercise type metadata
+  BARBELL_EXERCISES: ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row', 'front-squat', 'slow-tempo-squat', 'slow-tempo-front-squat'],
+  SINGLE_ARM_EXERCISES: ['farmer-carry'],
+  CABLE_EXERCISES: ['cable-pullthrough'],
+  EXERCISE_INCREMENT: { 'overhead-press': 2.5 },
+
+  getExerciseType(exerciseId) {
+    if (this.BARBELL_EXERCISES.includes(exerciseId)) return 'barbell';
+    if (this.SINGLE_ARM_EXERCISES.includes(exerciseId)) return 'single-arm';
+    if (this.CABLE_EXERCISES.includes(exerciseId)) return 'cable';
+    return 'other';
+  },
+
+  getWeightIncrement(exerciseId) {
+    return this.EXERCISE_INCREMENT[exerciseId] || 5;
+  },
+
   renderWeightTab(exerciseId, exercise) {
     const phase = this.exerciseDetail?.phase || 1;
     const effective = this.getEffectiveExercise(exercise, phase);
@@ -1612,18 +1629,21 @@ const App = {
     const setsReps = `${effective.sets}×${effective.reps}`;
     const overrideClass = hasOverride ? ' has-override' : '';
     const editorHtml = this.renderSetsRepsEditor(exercise, effective);
+    const exerciseType = this.getExerciseType(exerciseId);
+    const increment = this.getWeightIncrement(exerciseId);
+    const isBarbell = exerciseType === 'barbell';
+    const isSingleArm = exerciseType === 'single-arm';
 
     if (isBodyweight && !isTimeBased) {
       return `
         <div class="weight-tab bodyweight">
           <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps} <span class="edit-icon">&#9998;</span></div>
           <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
-          <p>Bodyweight exercise - no weight adjustment needed</p>
         </div>
       `;
     }
 
-    if (isTimeBased) {
+    if (isTimeBased && isBodyweight) {
       return `
         <div class="weight-tab time-based">
           <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps} <span class="edit-icon">&#9998;</span></div>
@@ -1632,22 +1652,20 @@ const App = {
       `;
     }
 
-    // Weighted exercise
-    const plates = this.calculatePlates(weight);
+    // Weighted exercise (including time-based with weight like farmer carries)
+    const weightLabel = isSingleArm ? `${weight} lb / hand` : `${weight} lb`;
 
     return `
       <div class="weight-tab weighted">
         <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps} <span class="edit-icon">&#9998;</span></div>
         <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
 
-        <div class="plate-visualization">
-          ${this.renderPlateBar(plates)}
-        </div>
+        ${isBarbell ? `<div class="plate-visualization">${this.renderPlateBar(this.calculatePlates(weight))}</div>` : ''}
 
         <div class="weight-adjuster">
-          <button class="weight-btn" data-action="decrease">-5</button>
-          <div class="weight-display" id="weight-value">${weight} lb</div>
-          <button class="weight-btn" data-action="increase">+5</button>
+          <button class="weight-btn" data-action="decrease" data-increment="${increment}">-${increment}</button>
+          <div class="weight-display" id="weight-value">${weightLabel}</div>
+          <button class="weight-btn" data-action="increase" data-increment="${increment}">+${increment}</button>
         </div>
       </div>
     `;
@@ -2045,20 +2063,30 @@ const App = {
     if (!exerciseId) return;
 
     // Weight adjustment buttons
+    const exerciseType = this.getExerciseType(exerciseId);
+    const isSingleArm = exerciseType === 'single-arm';
+    const isBarbell = exerciseType === 'barbell';
+
     document.querySelectorAll('.weight-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         const action = e.target.dataset.action;
+        const increment = parseFloat(e.target.dataset.increment) || 5;
         let currentWeight = Storage.getExerciseWeight(exerciseId) || 135;
+        const minWeight = isBarbell ? 45 : increment;
 
-        if (action === 'increase') currentWeight += 5;
-        if (action === 'decrease') currentWeight = Math.max(45, currentWeight - 5);
+        if (action === 'increase') currentWeight += increment;
+        if (action === 'decrease') currentWeight = Math.max(minWeight, currentWeight - increment);
 
         Storage.setExerciseWeight(exerciseId, currentWeight);
-        document.getElementById('weight-value').textContent = `${currentWeight} lb`;
+        const label = isSingleArm ? `${currentWeight} lb / hand` : `${currentWeight} lb`;
+        document.getElementById('weight-value').textContent = label;
 
-        // Update plates
-        const plates = this.calculatePlates(currentWeight);
-        document.querySelector('.plate-visualization').innerHTML = this.renderPlateBar(plates);
+        // Update plates (only for barbell exercises)
+        const plateViz = document.querySelector('.plate-visualization');
+        if (plateViz && isBarbell) {
+          const plates = this.calculatePlates(currentWeight);
+          plateViz.innerHTML = this.renderPlateBar(plates);
+        }
       });
     });
 
