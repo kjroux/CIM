@@ -92,6 +92,9 @@ const App = {
   renderView(viewName) {
     this.currentView = viewName;
 
+    // Scroll to top on view change
+    window.scrollTo(0, 0);
+
     // Clear rest timer if navigating away from today view
     if (viewName !== 'today') {
       this.stopRestTimer();
