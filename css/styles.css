@@ -844,7 +844,7 @@ input, textarea, [contenteditable] {
 .sets-duration-display {
   font-size: 28px;
   font-weight: 600;
-  color: var(--color-text-light);
+  color: var(--color-primary);
   cursor: pointer;
   display: flex;
   align-items: center;

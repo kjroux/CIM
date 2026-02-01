@@ -1,5 +1,7 @@
 // CIM Training App - Main Application Logic
 
+const APP_VERSION = '5.22';
+
 const App = {
   currentView: 'today',
   currentDate: null,
@@ -1448,7 +1450,7 @@ const App = {
           <p class="setting-note">This will delete all logged workouts and reset the app.</p>
         </div>
 
-        <p class="setting-note" style="text-align: center; margin-top: 24px;">v5.10</p>
+        <p class="setting-note" style="text-align: center; margin-top: 24px;">v${APP_VERSION}</p>
       </div>
     `;
   },
@@ -1660,13 +1662,13 @@ const App = {
 
     return `
       <div class="weight-tab weighted">
-        ${isBarbell ? `<div class="plate-visualization">${this.renderPlateBar(this.calculatePlates(weight))}</div>` : ''}
-
         <div class="weight-adjuster">
           <button class="weight-btn${increment % 1 !== 0 ? ' small-text' : ''}" data-action="decrease" data-increment="${increment}">-${increment}</button>
           <div class="weight-display" id="weight-value">${weightLabel}</div>
           <button class="weight-btn${increment % 1 !== 0 ? ' small-text' : ''}" data-action="increase" data-increment="${increment}">+${increment}</button>
         </div>
+
+        ${isBarbell ? `<div class="plate-visualization">${this.renderPlateBar(this.calculatePlates(weight))}</div>` : ''}
 
         <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps}</div>
         <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
