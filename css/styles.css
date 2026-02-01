@@ -842,7 +842,7 @@ input, textarea, [contenteditable] {
 
 .sets-reps-display,
 .sets-duration-display {
-  font-size: 18px;
+  font-size: 28px;
   font-weight: 600;
   color: var(--color-text-light);
   cursor: pointer;
@@ -861,7 +861,7 @@ input, textarea, [contenteditable] {
 }
 
 .sets-reps-display .edit-icon {
-  font-size: 14px;
+  font-size: 18px;
   opacity: 0.35;
 }
 
