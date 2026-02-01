@@ -1653,7 +1653,7 @@ const App = {
     }
 
     // Weighted exercise (including time-based with weight like farmer carries)
-    const weightLabel = isSingleArm ? `${weight} lb / hand` : `${weight} lb`;
+    const weightLabel = `${weight} lb`;
 
     return `
       <div class="weight-tab weighted">
@@ -2078,7 +2078,7 @@ const App = {
         if (action === 'decrease') currentWeight = Math.max(minWeight, currentWeight - increment);
 
         Storage.setExerciseWeight(exerciseId, currentWeight);
-        const label = isSingleArm ? `${currentWeight} lb / hand` : `${currentWeight} lb`;
+        const label = `${currentWeight} lb`;
         document.getElementById('weight-value').textContent = label;
 
         // Update plates (only for barbell exercises)
