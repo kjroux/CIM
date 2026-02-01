@@ -839,22 +839,31 @@ input, textarea, [contenteditable] {
 .weight-tab {
   display: flex;
   flex-direction: column;
-  gap: 24px;
   align-items: center;
+  gap: 12px;
+  min-height: calc(100vh - var(--nav-height) - 180px);
+  justify-content: center;
+}
+
+.weight-control-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
 }
 
 .sets-reps-display,
 .sets-duration-display {
-  font-size: 28px;
-  font-weight: 600;
-  color: var(--color-primary);
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--color-text-light);
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 8px 16px;
-  border-radius: 8px;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 6px;
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -869,7 +878,7 @@ input, textarea, [contenteditable] {
 }
 
 .sets-reps-display.has-override {
-  color: #4285F4;
+  color: var(--color-primary);
 }
 
 .sets-reps-display.has-override .edit-icon {
@@ -981,7 +990,7 @@ input, textarea, [contenteditable] {
 .plate-visualization {
   width: 100%;
   max-width: 500px;
-  margin: 20px 0;
+  margin: 0;
 }
 
 .plate-bar {
@@ -989,7 +998,7 @@ input, textarea, [contenteditable] {
   align-items: center;
   justify-content: center;
   gap: 4px;
-  padding: 20px 0;
+  padding: 8px 0;
 }
 
 .plates-left,
@@ -999,15 +1008,15 @@ input, textarea, [contenteditable] {
 }
 
 .plate {
-  width: 50px;
-  height: 80px;
+  width: 44px;
+  height: 60px;
   border-radius: 4px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: #fff;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
@@ -1026,7 +1035,7 @@ input, textarea, [contenteditable] {
 }
 
 .bar-only {
-  padding: 20px 40px;
+  padding: 12px 40px;
   background: #9E9E9E;
   color: #fff;
   border-radius: 4px;

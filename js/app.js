@@ -1,6 +1,6 @@
 // CIM Training App - Main Application Logic
 
-const APP_VERSION = '1.0';
+const APP_VERSION = '1.1';
 
 const App = {
   currentView: 'today',
@@ -1666,14 +1666,14 @@ const App = {
 
     return `
       <div class="weight-tab weighted">
-        <div class="weight-adjuster">
-          <button class="weight-btn${increment % 1 !== 0 ? ' small-text' : ''}" data-action="decrease" data-increment="${increment}">-${increment}</button>
-          <div class="weight-display" id="weight-value">${weightLabel}</div>
-          <button class="weight-btn${increment % 1 !== 0 ? ' small-text' : ''}" data-action="increase" data-increment="${increment}">+${increment}</button>
+        <div class="weight-control-group">
+          <div class="weight-adjuster">
+            <button class="weight-btn${increment % 1 !== 0 ? ' small-text' : ''}" data-action="decrease" data-increment="${increment}">-${increment}</button>
+            <div class="weight-display" id="weight-value">${weightLabel}</div>
+            <button class="weight-btn${increment % 1 !== 0 ? ' small-text' : ''}" data-action="increase" data-increment="${increment}">+${increment}</button>
+          </div>
+          ${isBarbell ? `<div class="plate-visualization">${this.renderPlateBar(this.calculatePlates(weight))}</div>` : ''}
         </div>
-
-        ${isBarbell ? `<div class="plate-visualization">${this.renderPlateBar(this.calculatePlates(weight))}</div>` : ''}
-
         <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps}</div>
         <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
       </div>
