@@ -1640,7 +1640,7 @@ const App = {
     if (isBodyweight && !isTimeBased) {
       return `
         <div class="weight-tab bodyweight">
-          <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps} <span class="edit-icon">&#9998;</span></div>
+          <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps}</div>
           <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
         </div>
       `;
@@ -1649,7 +1649,7 @@ const App = {
     if (isTimeBased && isBodyweight) {
       return `
         <div class="weight-tab time-based">
-          <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps} <span class="edit-icon">&#9998;</span></div>
+          <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps}</div>
           <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
         </div>
       `;
@@ -1660,9 +1660,6 @@ const App = {
 
     return `
       <div class="weight-tab weighted">
-        <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps} <span class="edit-icon">&#9998;</span></div>
-        <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
-
         ${isBarbell ? `<div class="plate-visualization">${this.renderPlateBar(this.calculatePlates(weight))}</div>` : ''}
 
         <div class="weight-adjuster">
@@ -1670,6 +1667,9 @@ const App = {
           <div class="weight-display" id="weight-value">${weightLabel}</div>
           <button class="weight-btn${increment % 1 !== 0 ? ' small-text' : ''}" data-action="increase" data-increment="${increment}">+${increment}</button>
         </div>
+
+        <div class="sets-reps-display${overrideClass}" id="sets-reps-tap-target">${setsReps}</div>
+        <div class="sets-reps-editor" id="sets-reps-editor" style="display: none;">${editorHtml}</div>
       </div>
     `;
   },
