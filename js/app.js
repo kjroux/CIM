@@ -1,6 +1,6 @@
 // CIM Training App - Main Application Logic
 
-const APP_VERSION = '1.1';
+const APP_VERSION = '1.2';
 
 const App = {
   currentView: 'today',
@@ -47,10 +47,12 @@ const App = {
         .then(reg => {
           console.log('[App] Service Worker registered');
 
-          // Check for updates every 60 seconds
-          setInterval(() => {
-            reg.update();
-          }, 60000);
+          // Check for updates when app becomes visible (returning from background)
+          document.addEventListener('visibilitychange', () => {
+            if (document.visibilityState === 'visible') {
+              reg.update();
+            }
+          });
 
           // Handle updates
           reg.addEventListener('updatefound', () => {
