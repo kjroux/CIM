@@ -762,8 +762,13 @@ input, textarea, [contenteditable] {
 .exercise-detail-page {
   min-height: calc(100vh - var(--nav-height));
   min-height: calc(100dvh - var(--nav-height));
-  display: flex;
-  flex-direction: column;
+}
+
+.exercise-detail-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: var(--color-bg);
 }
 
 .exercise-detail-header {
@@ -804,7 +809,6 @@ input, textarea, [contenteditable] {
 .exercise-detail-tabs {
   display: flex;
   border-bottom: 2px solid var(--color-border);
-  background: var(--color-bg);
 }
 
 .tab-button {

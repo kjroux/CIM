@@ -1,6 +1,6 @@
 // CIM Training App - Main Application Logic
 
-const APP_VERSION = '1.0';
+const APP_VERSION = '1.1';
 
 const App = {
   currentView: 'today',
@@ -1567,17 +1567,19 @@ const App = {
 
     return `
       <div class="exercise-detail-page">
-        <div class="exercise-detail-header">
-          <button class="back-button" id="back-to-workout">← Back</button>
-          <div class="exercise-detail-title">
-            <h2>${exerciseName}</h2>
+        <div class="exercise-detail-sticky">
+          <div class="exercise-detail-header">
+            <button class="back-button" id="back-to-workout">← Back</button>
+            <div class="exercise-detail-title">
+              <h2>${exerciseName}</h2>
+            </div>
           </div>
-        </div>
 
-        <div class="exercise-detail-tabs">
-          <button class="tab-button active" data-tab="weight">Weight</button>
-          <button class="tab-button" data-tab="progress">Progress</button>
-          <button class="tab-button" data-tab="history">History</button>
+          <div class="exercise-detail-tabs">
+            <button class="tab-button active" data-tab="weight">Weight</button>
+            <button class="tab-button" data-tab="progress">Progress</button>
+            <button class="tab-button" data-tab="history">History</button>
+          </div>
         </div>
 
         <div class="exercise-detail-content">
