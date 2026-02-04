@@ -152,7 +152,7 @@ const WORKOUT_DETAILS = {
         { id: "back-squat-80", name: "Back Squat (80%)", sets: 3, reps: 8, noTracking: true },
         { id: "hip-thrust-80", name: "Hip Thrust (80%)", sets: 4, reps: 8, noTracking: true },
         { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", sets: 3, reps: 8 },
-        { id: "walking-lunges", name: "Walking Lunges", sets: 3, reps: 10 },
+        { id: "step-ups", name: "Step-Ups", bodyweight: true, sets: 3, reps: 10 },
         { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12 },
         { id: "core-circuit", name: "Core Circuit", sets: 1, reps: 1, bodyweight: true }
       ]
@@ -206,7 +206,7 @@ const EXERCISE_CATEGORIES = {
   'Compound': ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row'],
   'Reduced Intensity': ['back-squat-80', 'hip-thrust-80'],
   'Accessory': ['hip-thrust', 'bulgarian-split-squat', 'ring-dips', 'pullups', 'farmer-carry'],
-  'Mobility & Stability': ['step-downs', 'walking-lunges', 'monster-walks', 'single-leg-calf'],
+  'Mobility & Stability': ['step-downs', 'step-ups', 'monster-walks', 'single-leg-calf'],
   'Core': ['side-plank', 'core-circuit']
 };
 
