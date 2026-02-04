@@ -1,6 +1,6 @@
 // CIM Training App - Main Application Logic
 
-const APP_VERSION = '1.7';
+const APP_VERSION = '1.8';
 
 const App = {
   currentView: 'today',

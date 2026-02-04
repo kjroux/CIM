@@ -204,8 +204,8 @@ const WORKOUT_DETAILS = {
 
 const EXERCISE_CATEGORIES = {
   'Compound': ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row'],
-  'Reduced Intensity': ['back-squat-80', 'hip-thrust-80'],
   'Accessory': ['hip-thrust', 'bulgarian-split-squat', 'ring-dips', 'pullups', 'farmer-carry'],
+  'Reduced Intensity': ['back-squat-80', 'hip-thrust-80'],
   'Mobility & Stability': ['step-downs', 'step-ups', 'monster-walks', 'single-leg-calf'],
   'Core': ['side-plank', 'core-circuit']
 };
