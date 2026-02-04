@@ -996,12 +996,11 @@ input, textarea, [contenteditable] {
 .plate-bar {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
+  justify-content: flex-start;
+  gap: 0;
   padding: 8px 0;
 }
 
-.plates-left,
 .plates-right {
   display: flex;
   gap: 2px;
@@ -1024,14 +1023,15 @@ input, textarea, [contenteditable] {
   height: 20px;
   background: #9E9E9E;
   color: #fff;
-  padding: 0 40px;
+  padding: 0 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 600;
   font-size: 12px;
-  border-radius: 2px;
-  min-width: 100px;
+  border-radius: 2px 0 0 2px;
+  min-width: 60px;
+  margin-right: 2px;
 }
 
 .bar-only {
@@ -1552,7 +1552,7 @@ input, textarea, [contenteditable] {
 .library-category-title {
   font-size: 13px;
   font-weight: 600;
-  color: var(--color-text-light);
+  color: var(--color-primary);
   text-transform: uppercase;
   letter-spacing: 0.5px;
   padding: 12px 16px 6px;

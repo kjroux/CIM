@@ -1,6 +1,6 @@
 // CIM Training App - Main Application Logic
 
-const APP_VERSION = '1.8';
+const APP_VERSION = '1.9';
 
 const App = {
   currentView: 'today',
@@ -1771,15 +1771,11 @@ const App = {
       return `<div class="plate" style="${style}">${plate.name}</div>`;
     }).join('');
 
-    // Left side: reverse so heaviest is closest to bar (center)
-    const leftPlates = [...plates].reverse();
-    const leftHTML = makePlateHTML(leftPlates);
-    // Right side: heaviest first (closest to bar) — already in order
+    // Right side only: heaviest first (closest to bar)
     const rightHTML = makePlateHTML(plates);
 
     return `
       <div class="plate-bar">
-        <div class="plates-left">${leftHTML}</div>
         <div class="barbell-bar">45</div>
         <div class="plates-right">${rightHTML}</div>
       </div>
