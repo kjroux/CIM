@@ -152,8 +152,8 @@ const WORKOUT_DETAILS = {
       name: "Lift C: Legs + Glutes",
       duration: "60-75 min",
       exercises: [
-        { id: "back-squat-80", name: "Back Squat (80%)", sets: 3, reps: 8 },
-        { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 4, reps: 8 },
+        { id: "back-squat-80", name: "Back Squat (80%)", sets: 3, reps: 8, noTracking: true },
+        { id: "hip-thrust-80", name: "Hip Thrust (80%)", sets: 4, reps: 8, noTracking: true },
         { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", sets: 3, reps: 8 },
         { id: "walking-lunges", name: "Walking Lunges", bodyweight: true, sets: 3, reps: 10 },
         { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12 },
@@ -207,7 +207,7 @@ const WORKOUT_DETAILS = {
 
 const EXERCISE_CATEGORIES = {
   'Compound': ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row', 'back-squat-80'],
-  'Accessory': ['hip-thrust', 'bulgarian-split-squat', 'cable-pullthrough', 'ring-dips', 'pullups', 'slow-tempo-squat', 'slow-tempo-front-squat', 'farmer-carry'],
+  'Accessory': ['hip-thrust', 'hip-thrust-80', 'bulgarian-split-squat', 'cable-pullthrough', 'ring-dips', 'pullups', 'slow-tempo-squat', 'slow-tempo-front-squat', 'farmer-carry'],
   'Mobility & Stability': ['step-downs', 'walking-lunges', 'monster-walks', 'single-leg-calf'],
   'Core': ['side-plank', 'core-circuit']
 };

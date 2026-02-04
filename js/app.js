@@ -1,6 +1,6 @@
 // CIM Training App - Main Application Logic
 
-const APP_VERSION = '1.2';
+const APP_VERSION = '1.3';
 
 const App = {
   currentView: 'today',
@@ -1579,8 +1579,8 @@ const App = {
 
           <div class="exercise-detail-tabs">
             <button class="tab-button active" data-tab="weight">Weight</button>
-            <button class="tab-button" data-tab="progress">Progress</button>
-            <button class="tab-button" data-tab="history">History</button>
+            ${exercise.noTracking ? '' : '<button class="tab-button" data-tab="progress">Progress</button>'}
+            ${exercise.noTracking ? '' : '<button class="tab-button" data-tab="history">History</button>'}
           </div>
         </div>
 
@@ -1605,7 +1605,7 @@ const App = {
   },
 
   // Exercise type metadata
-  BARBELL_EXERCISES: ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row', 'front-squat', 'slow-tempo-squat', 'slow-tempo-front-squat'],
+  BARBELL_EXERCISES: ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row', 'front-squat', 'slow-tempo-squat', 'slow-tempo-front-squat', 'back-squat-80'],
   SINGLE_ARM_EXERCISES: ['farmer-carry'],
   CABLE_EXERCISES: ['cable-pullthrough'],
   EXERCISE_INCREMENT: { 'overhead-press': 2.5 },
@@ -1787,6 +1787,7 @@ const App = {
   },
 
   renderProgressTab(exerciseId, exercise) {
+    if (exercise.noTracking) return '<div class="progress-tab"><p>Tracking disabled for deload exercises</p></div>';
     const history = Storage.getExerciseHistory(exerciseId);
     const isBodyweight = exercise.bodyweight;
     const isTimeBased = typeof exercise.reps === 'string' && (exercise.reps.includes('sec') || exercise.reps.includes('min'));
@@ -1952,6 +1953,7 @@ const App = {
   },
 
   renderHistoryTab(exerciseId, exercise) {
+    if (exercise.noTracking) return '<div class="history-tab"><p>Tracking disabled for deload exercises</p></div>';
     const phase = this.exerciseDetail?.phase || 1;
     const effective = this.getEffectiveExercise(exercise, phase);
     const history = Storage.getExerciseHistory(exerciseId);
@@ -2305,7 +2307,7 @@ const App = {
       for (const ex of exercises) {
         const effective = this.getEffectiveExercise(ex, currentPhase);
         const weight = Storage.getExerciseWeight(ex.id);
-        const history = Storage.getExerciseHistory(ex.id);
+        const history = ex.noTracking ? [] : Storage.getExerciseHistory(ex.id);
         const sessionCount = history.length;
 
         // Format sets x reps
