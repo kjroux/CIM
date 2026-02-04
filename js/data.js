@@ -75,12 +75,10 @@ const WORKOUT_DETAILS = {
       exercises: [
         { id: "low-bar-squat", name: "Low-Bar Back Squat", sets: 3, reps: 5 },
         { id: "bench-press", name: "Bench Press", sets: 5, reps: 5 },
-        { id: "overhead-press", name: "Overhead Press", sets: 3, reps: 5 },
         { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 10 },
+        { id: "overhead-press", name: "Overhead Press", sets: 3, reps: 5 },
         { id: "farmer-carry", name: "Farmer Carries", sets: 3, reps: "45sec" },
-        { id: "ring-dips", name: "Ring Dips", sets: 3, reps: 5, bodyweight: true },
-        { id: "cable-pullthrough", name: "Cable Pull-Through", sets: 2, reps: 12 },
-        { id: "plank", name: "Plank", sets: 2, reps: "30sec", bodyweight: true }
+        { id: "ring-dips", name: "Ring Dips", sets: 3, reps: 5, bodyweight: true }
       ]
     },
     phase2: {
@@ -119,8 +117,6 @@ const WORKOUT_DETAILS = {
         { id: "deadlift", name: "Deadlift", sets: 1, reps: 5 },
         { id: "barbell-row", name: "Barbell Row", sets: 3, reps: 5 },
         { id: "pullups", name: "Pull-ups", bodyweight: true, sets: 4, reps: 6 },
-        { id: "romanian-deadlift", name: "Romanian Deadlift", sets: 3, reps: 8 },
-        { id: "slow-tempo-squat", name: "Slow Tempo Back Squat", sets: 2, reps: 6, notes: "4 sec down, 1 sec up, 60%" },
         { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8 },
         { id: "monster-walks", name: "Monster Walks", bodyweight: true, sets: 2, reps: 12 },
         { id: "side-plank", name: "Side Plank", sets: 2, reps: "20sec", bodyweight: true }
@@ -156,12 +152,12 @@ const WORKOUT_DETAILS = {
       name: "Lift C: Legs + Glutes",
       duration: "60-75 min",
       exercises: [
-        { id: "front-squat", name: "Front Squat", sets: 3, reps: 8 },
+        { id: "back-squat-80", name: "Back Squat (80%)", sets: 3, reps: 8 },
         { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 4, reps: 8 },
         { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", sets: 3, reps: 8 },
-        { id: "step-ups", name: "Step-Ups", bodyweight: true, sets: 3, reps: 10 },
+        { id: "walking-lunges", name: "Walking Lunges", bodyweight: true, sets: 3, reps: 10 },
         { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12 },
-        { id: "core-circuit", name: "Core Circuit", sets: 1, reps: "5min", bodyweight: true }
+        { id: "core-circuit", name: "Core Circuit", sets: 1, reps: 1, bodyweight: true }
       ]
     }
   },
@@ -210,10 +206,10 @@ const WORKOUT_DETAILS = {
 };
 
 const EXERCISE_CATEGORIES = {
-  'Compound': ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row', 'front-squat'],
-  'Accessory': ['hip-thrust', 'romanian-deadlift', 'bulgarian-split-squat', 'cable-pullthrough', 'ring-dips', 'pullups', 'slow-tempo-squat', 'slow-tempo-front-squat', 'farmer-carry'],
-  'Mobility & Stability': ['step-downs', 'step-ups', 'monster-walks', 'single-leg-calf'],
-  'Core': ['plank', 'side-plank', 'core-circuit']
+  'Compound': ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row', 'back-squat-80'],
+  'Accessory': ['hip-thrust', 'bulgarian-split-squat', 'cable-pullthrough', 'ring-dips', 'pullups', 'slow-tempo-squat', 'slow-tempo-front-squat', 'farmer-carry'],
+  'Mobility & Stability': ['step-downs', 'walking-lunges', 'monster-walks', 'single-leg-calf'],
+  'Core': ['side-plank', 'core-circuit']
 };
 
 // Build a lookup: exerciseId → category
