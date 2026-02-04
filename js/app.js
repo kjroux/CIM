@@ -1,6 +1,6 @@
 // CIM Training App - Main Application Logic
 
-const APP_VERSION = '1.3';
+const APP_VERSION = '1.4';
 
 const App = {
   currentView: 'today',
@@ -1605,9 +1605,9 @@ const App = {
   },
 
   // Exercise type metadata
-  BARBELL_EXERCISES: ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row', 'front-squat', 'slow-tempo-squat', 'slow-tempo-front-squat', 'back-squat-80'],
+  BARBELL_EXERCISES: ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row', 'back-squat-80'],
   SINGLE_ARM_EXERCISES: ['farmer-carry'],
-  CABLE_EXERCISES: ['cable-pullthrough'],
+  CABLE_EXERCISES: [],
   EXERCISE_INCREMENT: { 'overhead-press': 2.5 },
 
   getExerciseType(exerciseId) {

@@ -91,8 +91,7 @@ const WORKOUT_DETAILS = {
         { id: "overhead-press", name: "OHP", sets: 3, reps: 5 },
         { id: "pullups", name: "Pull-ups", bodyweight: true, sets: 3, reps: "max" },
         { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 10 },
-        { id: "farmer-carry", name: "Farmer Carries", sets: 3, reps: "45sec" },
-        { id: "cable-pullthrough", name: "Cable Pull-Through", sets: 2, reps: 12 }
+        { id: "farmer-carry", name: "Farmer Carries", sets: 3, reps: "45sec" }
       ]
     },
     phase3: {
@@ -127,7 +126,6 @@ const WORKOUT_DETAILS = {
       duration: "60-70 min",
       exercises: [
         { id: "deadlift", name: "Deadlift", sets: 1, reps: 5 },
-        { id: "slow-tempo-front-squat", name: "Slow Tempo Front Squat", sets: 3, reps: 6, notes: "4 sec down, 1 sec up" },
         { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 10 },
         { id: "bulgarian-split-squat", name: "Bulgarian Split Squats", sets: 3, reps: 8 },
         { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8 },
@@ -140,7 +138,6 @@ const WORKOUT_DETAILS = {
       duration: "50-60 min",
       exercises: [
         { id: "deadlift", name: "Deadlift", sets: 1, reps: 5 },
-        { id: "slow-tempo-squat", name: "Slow Tempo Squat", sets: 2, reps: 6, notes: "4 sec down, any variation" },
         { id: "hip-thrust", name: "Barbell Hip Thrust", sets: 3, reps: 8 },
         { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8 },
         { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12 }
@@ -155,7 +152,7 @@ const WORKOUT_DETAILS = {
         { id: "back-squat-80", name: "Back Squat (80%)", sets: 3, reps: 8, noTracking: true },
         { id: "hip-thrust-80", name: "Hip Thrust (80%)", sets: 4, reps: 8, noTracking: true },
         { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", sets: 3, reps: 8 },
-        { id: "walking-lunges", name: "Walking Lunges", bodyweight: true, sets: 3, reps: 10 },
+        { id: "walking-lunges", name: "Walking Lunges", sets: 3, reps: 10 },
         { id: "single-leg-calf", name: "Single-Leg Calf Raises", bodyweight: true, sets: 2, reps: 12 },
         { id: "core-circuit", name: "Core Circuit", sets: 1, reps: 1, bodyweight: true }
       ]
@@ -207,7 +204,7 @@ const WORKOUT_DETAILS = {
 
 const EXERCISE_CATEGORIES = {
   'Compound': ['low-bar-squat', 'bench-press', 'overhead-press', 'deadlift', 'barbell-row', 'back-squat-80'],
-  'Accessory': ['hip-thrust', 'hip-thrust-80', 'bulgarian-split-squat', 'cable-pullthrough', 'ring-dips', 'pullups', 'slow-tempo-squat', 'slow-tempo-front-squat', 'farmer-carry'],
+  'Accessory': ['hip-thrust', 'hip-thrust-80', 'bulgarian-split-squat', 'ring-dips', 'pullups', 'farmer-carry'],
   'Mobility & Stability': ['step-downs', 'walking-lunges', 'monster-walks', 'single-leg-calf'],
   'Core': ['side-plank', 'core-circuit']
 };
