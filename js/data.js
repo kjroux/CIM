@@ -116,8 +116,8 @@ const WORKOUT_DETAILS = {
         { id: "deadlift", name: "Deadlift", sets: 1, reps: 5 },
         { id: "barbell-row", name: "Barbell Row", sets: 3, reps: 5 },
         { id: "pullups", name: "Pull-ups", bodyweight: true, sets: 4, reps: 6 },
-        { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8 },
         { id: "monster-walks", name: "Monster Walks", bodyweight: true, sets: 2, reps: 12 },
+        { id: "step-downs", name: "Step-Downs", bodyweight: true, sets: 2, reps: 8 },
         { id: "side-plank", name: "Side Plank", sets: 2, reps: "20sec", bodyweight: true }
       ]
     },
