@@ -1,6 +1,6 @@
 // CIM Training App - Main Application Logic
 
-const APP_VERSION = '2.0';
+const APP_VERSION = '2.1';
 
 const App = {
   currentView: 'today',
@@ -229,6 +229,18 @@ const App = {
 
     const phaseData = PROGRAM.phases.find(p => p.id === info.phase);
     if (!phaseData) return null;
+
+    // Check for week reordering (swap days)
+    const weekStart = this.getWeekStart(dateString);
+    const permutation = Storage.getWeekReordering(weekStart);
+
+    if (permutation && Array.isArray(permutation) && permutation.length === 7) {
+      // dayOfWeek is 1-7 (Mon-Sun), dayIndex is 0-6
+      const dayIndex = info.dayOfWeek - 1;
+      // permutation maps dayIndex to which workout slot to use
+      const workoutSlot = permutation[dayIndex] + 1; // Convert back to 1-7
+      return phaseData.weekTemplate[workoutSlot];
+    }
 
     return phaseData.weekTemplate[info.dayOfWeek];
   },
